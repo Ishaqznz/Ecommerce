@@ -1,0 +1,452 @@
+<%- include('./user/partials/admin/header') %>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<div class="content-wrapper" style="background-color: #f8f9fa; min-height: 100vh; padding: 20px; max-width: 100%;">
+    <!-- Header Section -->
+   <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-dark mb-3 mb-md-0">Customers</h1>
+        <div class="search-container" style="width: 300px;">
+            <form action="/admin/users/" method="get" class="search-form">
+                <div class="input-group">
+                    <input type="text" 
+                           class="form-control bg-light border-0 small" 
+                           placeholder="Search customers..." 
+                           name="search"
+                           value="<%= locals.search ? search : '' %>"
+                           style="border-radius: 30px 0 0 30px; padding: 12px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit" 
+                                style="border-radius: 0 30px 30px 0; padding: 12px 25px; background: linear-gradient(145deg, #4e73df 0%, #224abe 100%); border: none;">
+                            <i class="fas fa-search fa-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Error Messages -->
+    <% if (locals.error) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= error %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+
+    <!-- Success Messages -->
+    <% if (locals.success) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= success %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+
+    <!-- Customer Table Card -->
+    <div class="card shadow-sm" style="border-radius: 15px; border: none;">
+        <div class="card-header bg-white py-3">
+            <div class="row mx-2">
+                <div class="col-md-3 col-sm-6 text-primary">Name</div>
+                <div class="col-md-3 col-sm-6 text-primary">Email</div>
+                <div class="col-md-3 col-sm-6 text-primary">Phone No</div>
+                <div class="col-md-3 col-sm-6 text-primary text-center">Action</div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Table Body -->
+        <div class="card-body">
+            <% if (typeof data === 'undefined' || !Array.isArray(data)) { %>
+                <div class="alert alert-warning">
+                    No data available or invalid data format
+                </div>
+            <% } else if (data.length === 0) { %>
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No customers found</p>
+                </div>
+            <% } else { %>
+                <% for (let i = 0; i < data.length; i++) { %>
+                    <div class="row mx-2 py-3 align-items-center customer-row">
+                        <div class="col-md-3 col-sm-6 mb-2 mb-md-0">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-3">
+                                    <%= data[i].name.charAt(0).toUpperCase() %>
+                                </div>
+                                <span class="text-dark"><%= data[i].name %></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2 mb-md-0 text-break">
+                            <%= data[i].email %>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2 mb-md-0">
+                            <%= data[i].phoneNumber %>
+                        </div>
+                        <div class="col-md-3 col-sm-6 text-md-center text-start">
+                            <% if (data[i].isBlocked === false) { %>
+                                <a href="/admin/blockCustomer?id=<%= data[i]._id %>" 
+                                   class="btn btn-danger btn-sm px-4 block-btn"
+                                   data-userid="<%= data[i]._id %>"
+                                   data-username="<%= data[i].name %>"
+                                   style="border-radius: 20px;">Block</a>
+                            <% } else { %>
+                                <a href="/admin/unBlockCustomer?id=<%= data[i]._id %>" 
+                                   class="btn btn-success btn-sm px-4 unblock-btn"
+                                   data-userid="<%= data[i]._id %>"
+                                   data-username="<%= data[i].name %>"
+                                   style="border-radius: 20px;">Unblock</a>
+                            <% } %>
+                        </div>
+                    </div>
+                <% } %>
+            <% } %>
+        </div>
+
+        <!-- Pagination -->
+        <% if (data && data.length > 0) { %>
+            <div class="card-footer bg-white py-4">
+                <nav>
+                    <ul class="pagination justify-content-center mb-0">
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
+                                <a class="page-link" 
+                                   href="?page=<%= i %><%= locals.search ? '&search=' + search : '' %>"
+                                   style="border-radius: 50%; margin: 0 5px; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<style>
+    /* Modern Dashboard Styles */
+    .content-wrapper {
+        background: linear-gradient(135deg, #f6f9fc 0%, #f1f4f8 100%) !important;
+        padding: 2rem !important;
+    }
+    
+    /* Header Section Styles */
+    .h3 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: #2c3e50;
+        position: relative;
+        padding-bottom: 0.5rem;
+    }
+    
+    .h3:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 3px;
+        width: 60px;
+        background: linear-gradient(45deg, #4e73df, #36b9cc);
+        border-radius: 2px;
+    }
+    
+    /* Search Container Styles */
+    .search-container {
+        min-width: 300px;
+        max-width: 400px;
+    }
+    
+    .search-form .input-group {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border-radius: 30px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .search-form .input-group:hover {
+        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    
+    .search-form .form-control {
+        border: none;
+        padding: 1rem 1.5rem;
+        font-size: 0.95rem;
+        background-color: white !important;
+    }
+    
+    .search-form .btn-primary {
+        padding: 0.8rem 1.5rem;
+        background: linear-gradient(45deg, #4e73df, #36b9cc) !important;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .search-form .btn-primary:hover {
+        transform: translateX(2px);
+    }
+    
+    /* Card Styles */
+    .card {
+        background: white;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06) !important;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08) !important;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.5rem !important;
+    }
+    
+    .card-header .text-primary {
+        color: #4e73df !important;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Customer Row Styles */
+    .customer-row {
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .customer-row:hover {
+        background-color: #f8f9fe;
+        transform: scale(1.01);
+    }
+    
+    /* Avatar Circle Styles */
+    .avatar-circle {
+        background: linear-gradient(45deg, #4e73df, #36b9cc);
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 12px rgba(78,115,223,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .customer-row:hover .avatar-circle {
+        transform: scale(1.1);
+    }
+    
+    /* Button Styles */
+    .btn-sm {
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(45deg, #e74a3b, #dc3545);
+        border: none;
+    }
+    
+    .btn-success {
+        background: linear-gradient(45deg, #1cc88a, #20c997);
+        border: none;
+    }
+    
+    /* Pagination Styles */
+    .pagination {
+        gap: 0.5rem;
+    }
+    
+    .page-link {
+        width: 40px;
+        height: 40px;
+        border-radius: 50% !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        color: #4e73df;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(45deg, #4e73df, #36b9cc);
+        box-shadow: 0 4px 12px rgba(78,115,223,0.2);
+    }
+    
+    .page-link:hover {
+        transform: translateY(-2px);
+        background-color: #f8f9fe;
+    }
+    
+    /* Alert Styles */
+    .alert {
+        border: none;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .alert-success {
+        background: linear-gradient(45deg, #1cc88a, #20c997);
+        color: white;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(45deg, #e74a3b, #dc3545);
+        color: white;
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .content-wrapper {
+            padding: 1rem !important;
+        }
+        
+        .search-container {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .customer-row {
+            padding: 1rem 0.25rem;
+        }
+        
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+    }
+    
+    /* Loading Spinner Styles */
+    .loading-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.25rem;
+        color: #4e73df;
+    }
+    </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle form submission and loading state
+    const form = document.querySelector('.search-form');
+    const spinner = document.querySelector('.loading-spinner');
+    
+    form.addEventListener('submit', function() {
+        spinner.classList.remove('d-none');
+    });
+
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 150);
+        }, 5000);
+    });
+});
+
+// Handle block/unblock functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle block button clicks
+    document.querySelectorAll('.block-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const userId = this.dataset.userid;
+            const userName = this.dataset.username;
+            
+            Swal.fire({
+                title: 'Block Customer?',
+                html: `Are you sure you want to block <b>${userName}</b>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, block',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Blocking customer',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            // Redirect to block URL
+                            window.location.href = `/admin/blockCustomer?id=${userId}`;
+                        }
+                    });
+                }
+            });
+        });
+    });
+
+    // Handle unblock button clicks
+    document.querySelectorAll('.unblock-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const userId = this.dataset.userid;
+            const userName = this.dataset.username;
+            
+            Swal.fire({
+                title: 'Unblock Customer?',
+                html: `Are you sure you want to unblock <b>${userName}</b>?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, unblock',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Unblocking customer',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            // Redirect to unblock URL
+                            window.location.href = `/admin/unBlockCustomer?id=${userId}`;
+                        }
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+
+<%- include('./user/partials/admin/footer') %>

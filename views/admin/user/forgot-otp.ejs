@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Email Verification</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f9f9f9;
+        }
+
+        .verification-container {
+            background: #fff;
+            width: 350px;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .verification-container h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            text-align: center;
+        }
+
+        .form-group input:focus {
+            border-color: #007bff;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            color: #fff;
+            background: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .timer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-right: 1rem;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            color: #fff;
+            background: #6c757d;
+            border: none;
+            border-radius: 5px;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary:enabled {
+            cursor: pointer;
+            background: #5a6268;
+        }
+
+        .form-footer {
+            margin-top: 1rem;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .form-footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <form id="reset-password-form" action="/reset-password" method="POST" style="display:none;">
+        <input type="hidden" id="otp-value" name="otp" value="">
+        <input type="text" value="<%=email%>" name="email" style="display: none;">
+        <!-- You can add other fields if needed -->
+    </form>
+    <div class="verification-container">
+        <h1>Email Verification Page</h1>
+
+            <div class="form-group">
+                <input type="text" id="otp" name="otp" placeholder="Enter OTP" required>
+            </div>
+            <button type="submit" class="btn-primary" id="verify-button">Verify Email</button>
+
+        <div class="timer-container">
+            <span class="timer" id="timer"><%= timer %></span>
+            <form id="resend-otp-form" action="/forgot-otp" method="POST">
+                <input type="text" value="resend" name="resendOtpValue" style="display: none;">
+                <input type="text" value="<%=email%>" name="email" style="display: none;">
+                <input type="submit" class="btn-secondary" id="resend-otp" value="Resend OTP" disabled>
+            </form>
+        </div>
+
+        <form id="resend-otp-form" action="/reset-resend-otp" method="POST" style="display:none;">
+            <input type="hidden" id="otp-value" name="otp" value="">
+            <!-- You can add other fields if needed -->
+        </form>
+
+
+
+        <div class="form-footer">
+            Already verified? <a href="/login">Login now</a>
+        </div>
+    </div>
+
+    <script>
+        
+       const btn = document.getElementById('verify-button')
+       let timer = parseInt("<%=timer%>");
+       const timeSection = document.getElementById('timer')
+       const btnEnable = document.getElementById('resend-otp')
+       const resendOtpForm = document.getElementById('resend-otp-form');
+
+       const interval = setInterval(() => {
+            if (timer > 0) {
+
+                timer--; 
+                if (timer == 1) {
+                    timer = null
+                }
+                timeSection.textContent = timer; 
+
+            } else {
+                
+                clearInterval(interval); 
+                btnEnable.disabled = false
+    
+            }
+       }, 1000)
+
+       btn.addEventListener('click', (event) => {                                                                                                                                                           
+
+        const serverOTP = "<%=otp%>"
+        const userOtp = document.getElementById('otp').value
+
+        event.preventDefault()
+        
+        if (parseInt(serverOTP) == parseInt(userOtp) && timer > 1) {
+
+            Swal.fire({
+                icon: 'success', 
+                title: 'OTP verified successfully', 
+            }).then((result) => {
+                document.getElementById('reset-password-form').submit()
+            })
+
+        } else if (userOtp) {
+
+            Swal.fire({
+                icon: 'error', 
+                title: 'Invalid OTP', 
+                text: 'The OTP you entered is incorrect. Please try again.', 
+                confirmButtonText: 'Try Again', 
+                confirmButtonColor: '#d33',
+            })
+
+        } else {
+
+            Swal.fire({
+                title: 'error in otp verification',
+                icon: 'error'
+            })
+        }
+       })
+        
+    </script>
+</body>
+</html>

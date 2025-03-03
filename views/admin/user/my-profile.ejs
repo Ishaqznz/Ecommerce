@@ -1,0 +1,128 @@
+
+<%- include('partials/user/header') %>
+<!-- views/dashboard.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Men's Fashion</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            /* padding: 2rem; */
+        }
+
+        .dashboard-container {
+            
+            padding-top: 25px;
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 1px solid #eee;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .card-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .footer-div {
+            margin-top: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Profile Section -->
+        <div class="dashboard-card" onclick="navigateTo('/profile')">
+            <i class="fas fa-user card-icon"></i>
+            <h2 class="card-title">Profile</h2>
+            <p class="card-description">Update your personal details and style preferences.</p>
+        </div>
+    
+        <!-- Wardrobe Section -->
+        <div class="dashboard-card" onclick="navigateTo('/wardrobe')">
+            <i class="fas fa-tshirt card-icon"></i>
+            <h2 class="card-title">My Wardrobe</h2>
+            <p class="card-description">View your purchased items and create outfit combinations.</p>
+        </div>
+    
+        <!-- Orders Section -->
+        <div class="dashboard-card" onclick="navigateTo('/orders')">
+            <i class="fas fa-shopping-bag card-icon"></i>
+            <h2 class="card-title">Orders</h2>
+            <p class="card-description">Track your orders and view order history.</p>
+        </div>
+    
+        <!-- Measurements Section -->
+        <div class="dashboard-card" onclick="navigateTo('/measurements')">
+            <i class="fas fa-ruler card-icon"></i>
+            <h2 class="card-title">My Measurements</h2>
+            <p class="card-description">Manage your size profile for better recommendations.</p>
+        </div>
+    
+        <!-- Style Preferences -->
+        <div class="dashboard-card" onclick="navigateTo('/style-preferences')">
+            <i class="fas fa-star card-icon"></i>
+            <h2 class="card-title">Style Preferences</h2>
+            <p class="card-description">Customize your fashion preferences and interests.</p>
+        </div>
+    
+        <!-- Payment Methods -->
+        <div class="dashboard-card" onclick="navigateTo('/wallet')">
+            <i class="fas fa-credit-card card-icon"></i>
+            <h2 class="card-title">Wallet</h2>
+            <p class="card-description">Manage your payment options and billing details.</p>
+        </div>
+    </div>
+</body>
+
+<script>
+    function navigateTo(route) {
+        window.location.href = route;
+    }
+</script>
+</html>
+<div class="footer-div">
+    
+    <%- include('partials/user/footer') %>
+
+</div>

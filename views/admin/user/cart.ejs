@@ -1,0 +1,466 @@
+<%- include('partials/user/header') %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Page</title>
+    <!-- Add this in the <head> section of your HTML or EJS file -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a69bd;
+            --secondary-color: #718093;
+            --background-color: #f4f5f7;
+            --text-color: #2d3436;
+            --border-color: #e0e2e7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .cart-container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .cart-wrapper {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cart-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .cart-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .cart-table thead {
+            background-color: #f9fafb;
+        }
+
+        .cart-table th,
+        .cart-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cart-table th {
+            font-weight: 500;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .product-column {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .product-column img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            width: max-content;
+        }
+
+        .quantity-control button {
+            background: none;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .quantity-control button:hover {
+            background-color: var(--background-color);
+        }
+
+        .quantity-control input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            color: #ff6b6b;
+        }
+
+        .cart-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .summary-details {
+            text-align: right;
+        }
+
+        .summary-details div {
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-details .total {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .checkout-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background-color: #3742fa;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-cart-icon {
+            font-size: 4rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-cart-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-cart-message {
+            color: var(--secondary-color);
+            margin-bottom: 2rem;
+        }
+
+        .start-shopping-btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .start-shopping-btn:hover {
+            background-color: #3742fa;
+        }
+
+        @media (max-width: 768px) {
+            .cart-table {
+                border-collapse: collapse;
+            }
+
+            .cart-table thead {
+                display: none;
+            }
+
+            .cart-table tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+            }
+
+            .cart-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: none;
+                padding: 0.75rem 1rem;
+            }
+
+            .cart-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--secondary-color);
+            }
+
+            .product-column {
+                width: 100%;
+            }
+
+            .cart-summary {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .summary-details {
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+        }
+        .footer-div {
+          margin-top: 90px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-container">
+        <div class="cart-wrapper">
+            <!-- Cart with Items -->
+            <div class="cart-header">
+                <h1>Your Cart</h1>
+                <span><%= cart.items.length %> Items</span>
+            </div>
+
+            <% if (cart.items.length > 0) { %>
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Size</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% cart.items.forEach(item => { %>
+                    <tr data-id="<%= item._id %>">
+                        <td data-label="Product">
+                            <div class="product-column">
+                                <img src="/uploads/product-images/<%= item.productId.productImage[0] %>" alt="<%= item.productId.productName %>">
+                                <span><%= item.productId.productName %></span>
+                            </div>
+                        </td>
+
+                        <td><%= item.size %></td>
+
+                        <td data-label="Price" class="item-price">₹<%= item.price.toFixed(2) %></td>
+                        <td data-label="Quantity">
+                            <div class="quantity-control">
+                                <button onclick="updateCartItem('<%= item._id %>', parseInt(this.nextElementSibling.value) - 1, '<%= item.size %>')">-</button>
+                                <input type="number" value="<%= item.quantity %>" min="1" onchange="updateCartItem('<%= item._id %>', this.value, '<%= item.size %>')">
+                                <button onclick="updateCartItem('<%= item._id %>', parseInt(this.previousElementSibling.value) + 1, '<%= item.size %>')">+</button>
+                            </div>
+                        </td>
+                        
+                        <td data-label="Total" class="item-total">₹<%= (item.price * item.quantity).toFixed(2) %></td>
+                        <td>
+                            <button class="remove-btn" onclick="removeFromCart('<%= item._id %>')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+                
+            </table>
+
+            <div class="cart-summary">
+                <div class="summary-details">
+                    <div>Subtotal: <span class="cart-subtotal">₹<%= cart.subtotal ? cart.subtotal.toFixed(2) : '0.00' %></span></div>
+                    <div>Tax: <span class="cart-tax">₹<%= cart.tax ? cart.tax.toFixed(2) : '0.00' %></span></div>
+                    <div class="total">Total: <span class="cart-total">₹<%= cart.total ? cart.total.toFixed(2) : '0.00' %></span></div>
+                </div>
+                <a href="/checkout" class="checkout-btn">Proceed to Checkout</a>
+            </div>
+            
+            <% } else { %>
+            <div class="empty-cart">
+                <div class="empty-cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h2 class="empty-cart-title">Your cart is empty</h2>
+                <p class="empty-cart-message">Looks like you haven't added any items to your cart yet.</p>
+                <a href="/shop" class="start-shopping-btn">Start Shopping</a>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    
+  <div class="footer-div">
+    <%- include('partials/user/footer') %>
+  </div>
+
+
+<script>
+
+async function removeFromCart(itemId) {
+    const confirmation = await Swal.fire({
+        title: "Are you sure?",
+        text: "Do you really want to remove this item from the cart?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, remove it!",
+    });
+
+    if (confirmation.isConfirmed) {
+        try {
+            const response = await fetch('/removeFromCart', {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ itemId }),
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    title: "Removed!",
+                    text: "The item has been removed from your cart.",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                Swal.fire({
+                    title: "Error!",
+                    text: "Failed to remove the item. Please try again.",
+                    icon: "error",
+                });
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            Swal.fire({
+                title: "Error!",
+                text: "Something went wrong. Please try again later.",
+                icon: "error",
+            });
+        }
+    }
+}
+
+async function updateCartItem(itemId, newQuantity, size) {
+
+    console.log('size of the poduct: ', size);
+        newQuantity = parseInt(newQuantity, 10);
+        
+        if (newQuantity < 1) {
+            Swal.fire({
+            icon: 'warning',
+            title: 'Invalid Quantity',
+            text: 'Quantity cannot be less than 1.',
+            confirmButtonText: 'OK'
+        });
+            return;
+        }
+
+        if (newQuantity > 15 && newQuantity != 15) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Limit Exceeded',
+                text: 'You can only add up to 15 items per product.',
+                confirmButtonText: 'OK'
+            });
+        return;
+    }
+
+        try {
+            const response = await fetch('/cart/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ itemId, quantity: newQuantity, size: size })
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.message.includes("Only")) { 
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Stock Limit Reached',
+                            text: data.message,
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        updateCartUI(itemId, newQuantity, data.cart);
+                    }
+                })
+        } catch (error) {
+            console.error('Error updating cart:', error);
+        }
+    }
+
+    function updateCartUI(itemId, quantity, cart) {
+        const itemRow = document.querySelector(`tr[data-id="${itemId}"]`);
+
+        if (itemRow) {
+            // Update the input field with the latest quantity
+            const quantityInput = itemRow.querySelector('input');
+            quantityInput.value = quantity;
+
+            // Update total price for this item
+            const price = parseFloat(itemRow.querySelector('.item-price').innerText.replace('₹', ''));
+            itemRow.querySelector('.item-total').innerText = `₹${(price * quantity).toFixed(2)}`;
+
+            // Update cart summary (subtotal, tax, total)
+            document.querySelector('.cart-subtotal').innerText = `₹${cart.subtotal.toFixed(2)}`;
+            document.querySelector('.cart-tax').innerText = `₹${cart.tax.toFixed(2)}`;
+            document.querySelector('.cart-total').innerText = `₹${cart.total.toFixed(2)}`;
+        }
+    }
+
+
+
+
+</script>
+</body>
+</html>
+

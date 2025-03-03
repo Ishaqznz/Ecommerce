@@ -1,0 +1,537 @@
+<!-- views/profile.ejs -->
+
+
+<%- include('partials/user/header') %>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Card</title>
+    <style>
+
+        .profile-card {
+            background-color: #fff;
+            border-radius: 15px;
+            padding: 2rem;
+            width: 100%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background-color: #ffd54f;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 1rem;
+        }
+
+        .avatar-text {
+            font-size: 2.5rem;
+            color: #000;
+            text-transform: uppercase;
+        }
+
+        .profile-info {
+            text-align: center;
+            width: 100%;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .profile-email {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-phone {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .edit-button {
+            background-color: #ffd54f;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .edit-button:hover {
+            background-color: #ffca28;
+        }
+
+
+
+
+
+
+
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-image {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ffd700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            background: #f0f7ff;
+            color: #1a73e8;
+        }
+
+        .nav-item i {
+            margin-right: 0.75rem;
+            width: 20px;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .add-address-btn {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .add-address-btn:hover {
+            background: #1557b0;
+        }
+
+        .add-address-btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Address Card Styles */
+        .address-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+            height: 100%;
+        }
+
+        .address-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        .card-body {
+            padding: 0.5rem 1.5rem 1.5rem;
+        }
+
+        .address-type-badge {
+            font-size: 0.85rem;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .address-type-badge.home {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .address-type-badge.work {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .btn-actions {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            color: #666;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-actions:hover {
+            background-color: #f5f5f5;
+        }
+
+        .name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+            color: #333;
+        }
+
+        .contact-info {
+            margin-bottom: 1.5rem;
+            color: #555;
+        }
+
+        .phone-number, .alt-phone {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .alt-label {
+            font-size: 0.8rem;
+            background: #f5f5f5;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            margin-left: 0.5rem;
+            color: #666;
+        }
+
+                .address-details {
+            display: flex;
+            gap: 0.5rem;
+            color: #444;
+        }
+
+        .address-details i {
+            margin-top: 4px;
+            color: #666;
+        }
+
+        .address-text p {
+            margin: 0 0 0.3rem;
+            line-height: 1.4;
+        }
+
+        .dropdown-item {
+            padding: 0.6rem 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .col-md-6 {
+                padding: 0 0.75rem;
+            }
+            
+            .address-card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        .dropdown-item i {
+            width: 16px;
+        }
+
+        .address-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .address-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .address-phone {
+            color: #666;
+        }
+
+        .address-actions {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .address-details {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .menu-dots {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .menu-dots:hover {
+            background: #f5f5f5;
+        }
+
+        /* adding modal styles */
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto; /* Enable scrolling if needed */
+        }
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 20px auto; /* Reduced top margin */
+            padding: 20px; /* Reduced padding */
+            width: 90%;
+            max-width: 500px; /* Reduced max-width */
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            margin-bottom: 15px; /* Reduced margin */
+            padding-bottom: 10px;
+        }
+
+    .modal-header h2 {
+        font-size: 1.5rem;
+        color: #333;
+        margin: 0;
+    }
+
+    .close-modal {
+        font-size: 28px;
+        cursor: pointer;
+        color: #666;
+        transition: color 0.3s;
+    }
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px; /* Reduced gap */
+        margin-bottom: 10px; /* Reduced margin */
+    }
+
+    .form-group {
+        margin-bottom: 10px; /* Reduced margin */
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 8px; /* Reduced padding */
+        font-size: 0.9rem; /* Smaller font size */
+    }
+
+    .form-group label {
+        margin-bottom: 4px; /* Reduced margin */
+        font-size: 0.9rem; /* Smaller font size */
+    }
+
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #4a90e2;
+    }
+
+    .form-actions {
+        margin-top: 15px; /* Reduced margin */
+        gap: 10px; /* Reduced gap */
+    }
+
+    .cancel-btn,
+    .save-btn {
+        padding: 8px 16px; /* Reduced padding */
+    }
+
+
+    .cancel-btn {
+        background-color: #f5f5f5;
+        color: #333;
+    }
+
+    .save-btn {
+        background-color: #4a90e2;
+        color: white;
+    }
+
+    .cancel-btn:hover {
+        background-color: #eee;
+    }
+
+    .save-btn:hover {
+        background-color: #357abd;
+    }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            margin: 10px auto; 
+            padding: 15px; 
+            width: 95%; 
+        }
+        .form-row {
+            grid-template-columns: 1fr; /* Stack fields on mobile */
+            gap: 8px;
+        }
+    }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="profile-header">
+                <div class="profile-image">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2>Hello</h2>
+            </div>
+
+            <nav>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    MY ORDERS
+                </a>
+                <a href="/account" class="nav-item">
+                    <i class="fas fa-user-cog"></i>
+                    ACCOUNT SETTINGS
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    Profile Information
+                </a>
+                <a href="/profile" class="nav-item active">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Manage Addresses
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-id-card"></i>
+                    PAN Card Information
+                </a>
+            </nav>
+        </div>
+
+
+    <div class="profile-card">
+        <div class="avatar">
+            
+        </div>
+        <div class="profile-info">
+            <div class="profile-name"><%= user.name %></div>
+            <div class="profile-email"><%= user.email %></div>
+            <div class="profile-phone"><%= user.phoneNumber %></div>
+            <button class="edit-button" id="edit-profile">EDIT PROFILE</button>
+        </div>
+    </div>
+
+    <script>
+        const editProfile = document.getElementById('edit-profile')
+        editProfile.addEventListener('click', (e) => {
+            window.location.href = '/edit-account'
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,873 @@
+<!-- views/address-management.ejs -->
+<%- include('partials/user/header') %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+     <!-- Add these in the head section -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+     <!-- Your existing styles -->
+     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+     <!-- SweetAlert2 CDN -->
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Addresses</title>
+     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-image {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ffd700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            background: #f0f7ff;
+            color: #1a73e8;
+        }
+
+        .nav-item i {
+            margin-right: 0.75rem;
+            width: 20px;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .add-address-btn {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .add-address-btn:hover {
+            background: #1557b0;
+        }
+
+        .add-address-btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Address Card Styles */
+        .address-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+            height: 100%;
+        }
+
+        .address-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        .card-body {
+            padding: 0.5rem 1.5rem 1.5rem;
+        }
+
+        .address-type-badge {
+            font-size: 0.85rem;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .address-type-badge.home {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .address-type-badge.work {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .btn-actions {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            color: #666;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-actions:hover {
+            background-color: #f5f5f5;
+        }
+
+        .name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+            color: #333;
+        }
+
+        .contact-info {
+            margin-bottom: 1.5rem;
+            color: #555;
+        }
+
+        .phone-number, .alt-phone {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .alt-label {
+            font-size: 0.8rem;
+            background: #f5f5f5;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            margin-left: 0.5rem;
+            color: #666;
+        }
+
+                .address-details {
+            display: flex;
+            gap: 0.5rem;
+            color: #444;
+        }
+
+        .address-details i {
+            margin-top: 4px;
+            color: #666;
+        }
+
+        .address-text p {
+            margin: 0 0 0.3rem;
+            line-height: 1.4;
+        }
+
+        .dropdown-item {
+            padding: 0.6rem 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .col-md-6 {
+                padding: 0 0.75rem;
+            }
+            
+            .address-card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        .dropdown-item i {
+            width: 16px;
+        }
+
+        .address-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .address-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .address-phone {
+            color: #666;
+        }
+
+        .address-actions {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .address-details {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .menu-dots {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .menu-dots:hover {
+            background: #f5f5f5;
+        }
+
+        /* adding modal styles */
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto; /* Enable scrolling if needed */
+        }
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 20px auto; /* Reduced top margin */
+            padding: 20px; /* Reduced padding */
+            width: 90%;
+            max-width: 500px; /* Reduced max-width */
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            margin-bottom: 15px; /* Reduced margin */
+            padding-bottom: 10px;
+        }
+
+    .modal-header h2 {
+        font-size: 1.5rem;
+        color: #333;
+        margin: 0;
+    }
+
+    .close-modal {
+        font-size: 28px;
+        cursor: pointer;
+        color: #666;
+        transition: color 0.3s;
+    }
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px; /* Reduced gap */
+        margin-bottom: 10px; /* Reduced margin */
+    }
+
+    .form-group {
+        margin-bottom: 10px; /* Reduced margin */
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 8px; /* Reduced padding */
+        font-size: 0.9rem; /* Smaller font size */
+    }
+
+    .form-group label {
+        margin-bottom: 4px; /* Reduced margin */
+        font-size: 0.9rem; /* Smaller font size */
+    }
+
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #4a90e2;
+    }
+
+    .form-actions {
+        margin-top: 15px; /* Reduced margin */
+        gap: 10px; /* Reduced gap */
+    }
+
+    .cancel-btn,
+    .save-btn {
+        padding: 8px 16px; /* Reduced padding */
+    }
+
+
+    .cancel-btn {
+        background-color: #f5f5f5;
+        color: #333;
+    }
+
+    .save-btn {
+        background-color: #4a90e2;
+        color: white;
+    }
+
+    .cancel-btn:hover {
+        background-color: #eee;
+    }
+
+    .save-btn:hover {
+        background-color: #357abd;
+    }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            margin: 10px auto; 
+            padding: 15px; 
+            width: 95%; 
+        }
+        .form-row {
+            grid-template-columns: 1fr; /* Stack fields on mobile */
+            gap: 8px;
+        }
+    }
+
+    
+        
+</style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="profile-header">
+                <div class="profile-image">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2>Hello</h2>
+            </div>
+
+            <nav>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    MY ORDERS
+                </a>
+                <a href="/account" class="nav-item">
+                    <i class="fas fa-user-cog"></i>
+                    ACCOUNT SETTINGS
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    Profile Information
+                </a>
+                <a href="/profile" class="nav-item active">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Manage Addresses
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-id-card"></i>
+                    PAN Card Information
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h1 class="content-title">Manage Addresses</h1>
+                <button class="add-address-btn">
+                    <i class="fas fa-plus"></i>
+                    ADD A NEW ADDRESS
+                </button>
+            </div>
+
+            <!-- Address Cards -->
+            <div class="container py-4">
+                <div class="row g-4">
+                    <% userAddress.forEach(addressDoc => { %>
+                        <% addressDoc.address.forEach(addr => { %>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="address-card">
+                                    <div class="card-header">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="address-type-badge <%= addr.addressType.toLowerCase() %>">
+                                                <i class="fas <%= addr.addressType === 'home' ? 'fa-home' : 'fa-building' %>"></i>
+                                                <%= addr.addressType %>
+                                            </span>
+                                            <div class="dropdown">
+                                                <button class="btn-actions" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item" id="edit-btn" onclick="editAddress('<%=addr._id%>', '<%=JSON.stringify(addr)%>')">
+                                                            <i class="fas fa-edit me-2"></i> Edit
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" id="delete-btn" onclick="deleteAddress('<%=addr._id%>')">
+                                                            <i class="fas fa-trash-alt me-2"></i> Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <h3 class="name"><%= addr.name %></h3>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <div class="contact-info">
+                                            <div class="phone-number">
+                                                <i class="fas fa-phone-alt me-2"></i>
+                                                <span><%= addr.phone %></span>
+                                            </div>
+                                            <% if (addr.altPhone) { %>
+                                                <div class="alt-phone">
+                                                    <i class="fas fa-phone-alt me-2"></i>
+                                                    <span><%= addr.altPhone %></span>
+                                                    <!-- <span class="alt-label">Alternative</span> -->
+                                                </div>
+                                            <% } %>
+                                        </div>
+            
+                                        <div class="address-details">
+                                            <i class="fas fa-map-marker-alt me-2"></i>
+                                            <div class="address-text">
+                                                <p><%= addr.landMark %></p>
+                                                <p><%= addr.city %></p>
+                                                <p><%= addr.state %> - <%= addr.pincode %></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% }) %>
+                </div>
+            </div>
+
+
+    <!-- adding modal when clicking the add a new address -->
+
+    <div class="modal" id="addressModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Address</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="addressForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addressType">Address Type*</label>
+                        <select name="addressType" id="addressType" required>
+                            <option value="">Select Type</option>
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="name">Full Name*</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                </div>
+    
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City*</label>
+                        <input type="text" id="city" name="city" required>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="landMark">Landmark*</label>
+                        <input type="text" id="landMark" name="landMark" required>
+                    </div>
+                </div>
+    
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="state">State*</label>
+                        <input type="text" id="state" name="state" required>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="pincode">Pincode*</label>
+                        <input type="number" id="pincode" name="pincode" required>
+                    </div>
+                </div>
+    
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone Number*</label>
+                        <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="altPhone">Alternate Phone*</label>
+                        <input type="tel" id="altPhone" name="altPhone" pattern="[0-9]{10}" required>
+                    </div>
+                </div>
+    
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="save-btn" id="save-btn">Save Address</button>
+                </div>
+            </form>
+        </div>
+        </div>
+    </div>
+
+
+    <script>
+
+        // Get DOM elements
+        const modal = document.getElementById('addressModal');
+        const addAddressBtn = document.querySelector('.add-address-btn');
+        const closeBtn = document.querySelector('.close-modal');
+        const cancelBtn = document.querySelector('.cancel-btn');
+        const addressForm = document.getElementById('addressForm');
+
+        // Open modal
+        addAddressBtn.addEventListener('click', () => {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        });
+
+        // Close modal functions
+        function closeModal() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+            addressForm.reset(); // Reset form
+        }
+
+        // Close modal event listeners
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Form submission
+        addressForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Basic form validation
+            const inputs = addressForm.querySelectorAll('input, select');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.style.borderColor = '#ff4444';
+                } else {
+                    input.style.borderColor = '#ddd';
+                }
+            });
+
+            const data = {
+                addressType: document.getElementById('addressType').value,
+                name: document.getElementById('name').value,
+                city: document.getElementById('city').value,
+                landMark: document.getElementById('landMark').value,
+                state: document.getElementById('state').value,
+                pincode: document.getElementById('pincode').value,
+                phone: document.getElementById('phone').value,
+                altPhone: document.getElementById('altPhone').value,
+            };
+
+
+            if (isValid) {
+                try {
+                    const response = await fetch('/addingAddress', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+                    if (response.ok) {
+
+                        // closeModal();
+
+                        Swal.fire({
+                            title: 'Success! 🎉',
+                            text: 'Your address has been successfully added.',
+                            icon: 'success',
+                            confirmButtonText: 'Great!',
+                            confirmButtonColor: '#28a745', // Green color for success
+                            footer: '<a href="/help">Need help? Contact support</a>',
+                            backdrop: `rgba(0,0,0,0.6)`, // Dark transparent background
+                            allowOutsideClick: false, // Prevent closing by clicking outside
+                            allowEscapeKey: false,
+                            showCancelButton: true,
+                            cancelButtonText: 'Cancel',
+                            cancelButtonColor: '#888',
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp'
+                            }
+                        });
+
+                        window.location.reload();
+                    } else {
+                        throw new Error('Failed to add address');
+                    }
+
+                } catch (error) {
+                    console.error('Error:', error);
+
+                    Swal.fire({
+                        title: 'Oops! Something went wrong 😢',
+                        text: 'We couldn\'t add your address. Please try again later.',
+                        icon: 'error',
+                        confirmButtonText: 'Try Again',
+                        confirmButtonColor: '#d33',
+                        footer: '<a href="/help">Need help? Contact support</a>',
+                        backdrop: `rgba(0,0,0,0.6)`, // Dark transparent background
+                        allowOutsideClick: false, // Prevent closing by clicking outside
+                        allowEscapeKey: false,
+                        showCancelButton: true,
+                        cancelButtonText: 'Cancel',
+                        cancelButtonColor: '#888',
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutUp'
+                        }
+                    });
+                }
+            }
+        });
+
+        // Phone number validation
+        function validatePhone(input) {
+            input.value = input.value.replace(/\D/g, '').slice(0, 10);
+        }
+
+        const phoneInputs = document.querySelectorAll('input[type="tel"]');
+        phoneInputs.forEach(input => {
+            input.addEventListener('input', () => validatePhone(input));
+        });
+
+        const deleteBtn = document.getElementById('delete-btn');
+
+        function deleteAddress(addId) {
+
+            console.log(addId);
+            
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to recover this address!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/delete-address/${addId}`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === "Address deleted successfully") {
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "Your address has been deleted.",
+                                icon: "success"
+                            }).then(() => {
+                                location.reload(); // Refresh the page to reflect changes
+                            });
+                        } else {
+                            Swal.fire({
+                                title: "Error!",
+                                text: data.message,
+                                icon: "error"
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: "Error!",
+                            text: "Something went wrong!",
+                            icon: "error"
+                        });
+                        console.error("Error deleting address:", error);
+                    });
+                }
+            });
+        };
+
+        async function editAddress(addId, addrJson) {
+            // Parse the JSON string back to an object
+            const addr = JSON.parse(addrJson);
+
+            console.log('hellooo', addId, addr);
+
+            // Get the modal and form elements
+            const modal = document.getElementById('addressModal');
+            const form = document.getElementById('addressForm');
+
+            // Update modal title for editing
+            const modalTitle = modal.querySelector('.modal-header h2');
+            modalTitle.textContent = 'Edit Address';
+
+            // Pre-fill form fields with existing address data
+            document.getElementById('addressType').value = addr.addressType;
+            document.getElementById('name').value = addr.name;
+            document.getElementById('city').value = addr.city;
+            document.getElementById('landMark').value = addr.landMark;
+            document.getElementById('state').value = addr.state;
+            document.getElementById('pincode').value = addr.pincode;
+            document.getElementById('phone').value = addr.phone;
+            document.getElementById('altPhone').value = addr.altPhone;
+
+            // Update the form's action to the edit route
+            form.action = `/edit-address/${addId}`;
+
+            // Show the modal
+            modal.style.display = 'block';
+
+            form.onsubmit = async (e) => {
+                e.preventDefault(); 
+                // Create an object with the form data
+                const formData = {
+                    addressType: document.getElementById('addressType').value,
+                    name: document.getElementById('name').value,
+                    city: document.getElementById('city').value,
+                    landMark: document.getElementById('landMark').value,
+                    state: document.getElementById('state').value,
+                    pincode: document.getElementById('pincode').value,
+                    phone: document.getElementById('phone').value,
+                    altPhone: document.getElementById('altPhone').value
+                };
+
+                try {
+                    // Send PUT request to update address
+                    const response = await fetch(form.action, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (response.ok) {
+                        Swal.fire({
+                            title: "Updated!",
+                            text: "Your address has been updated successfully.",
+                            icon: "success"
+                        }).then(() => {
+                            modal.style.display = 'none'; 
+                            window.location.reload(); 
+                        });
+                    } else {
+                        throw new Error('Failed to update address');
+                    }
+                } catch (error) {
+                    console.error('Error updating address:', error);
+                    Swal.fire({ title: "Error!", text: "Failed to update address. Please try again.", icon: "error" });
+                }
+            };
+    }
+
+
+    </script>
+
+
+    
+
+</body>
+</html>
+

@@ -1,0 +1,34 @@
+<%- include('./user/partials/admin/header') %>
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title"> Error page admin </h2>
+        </div>
+    </div>
+    <div class="content-body">
+        <p>Oops! Something went wrong.</p>
+        <a href="/admin" class="btn-home">Go to Home</a>
+    </div>
+</section>
+<%- include('./user/partials/admin/footer') %>
+<style>
+    .content-body {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .btn-home {
+        display: inline-block;
+        padding: 12px 20px;
+        font-size: 16px;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .btn-home:hover {
+        background-color: #0056b3;
+    }
+</style>

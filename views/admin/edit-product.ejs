@@ -1,0 +1,646 @@
+<%- include('./user/partials/admin/header') %>
+
+
+<div class="product-form-container">
+    <h2 class="form-title">Edit Product</h2>
+    
+    <form class="product-form" action="/admin/update-product/<%= product._id %>" method="POST" enctype="multipart/form-data" id="form-data">
+        <div class="form-grid">
+            <div class="form-left">
+                <div class="form-group">
+                    <label for="productName">Product Name:</label>
+                    <input type="text" id="productName" name="productName" class="form-input" value="<%= product.productName %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productDescription">Product Description:</label>
+                    <textarea id="productDescription" name="productDescription" class="form-input" required><%= product.description %></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="productCategory">Product Category:</label>
+                    <input type="text" id="productCategory" name="productCategory" class="form-input" value="<%= categoryName %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="regularPrice">Regular Price:</label>
+                    <input type="number" id="regularPrice" name="regularPrice" class="form-input" value="<%= product.regularPrice %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="salePrice">Sale Price:</label>
+                    <input type="number" id="salePrice" name="salePrice" class="form-input" value="<%= product.salePrice %>" required>
+                </div>
+
+                <!-- <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" class="form-input" value="<%= product.quantity %>" required>
+                </div> -->
+
+
+                <div class="form-group size-options">
+                    <label for="productSize">Product Sizes and Quantities:</label>
+                    <div class="size-container">
+                        <% const sizeList = ['S', 'M', 'L', 'XL', 'XXL']; %>
+                        <% sizeList.forEach(size => { %>
+                            <div class="size-item">
+                                <button type="button" class="size-btn" data-size="<%= size %>"><%= size %></button>
+                                <input type="number" class="size-quantity" name="sizes[<%= size %>]" min="0"
+                                    placeholder="Qty" value="<%= sizes[size] || 0 %>">
+                            </div>
+                        <% }); %>
+                    </div>
+                
+                   
+                
+
+                <div class="form-group">
+                    <label for="color">Color:</label>
+                    <input type="text" id="color" name="color" class="form-input" value="<%= product.color %>" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="image-upload-section">
+            <h3 class="section-title">Current Product Images</h3>
+            <div class="image-preview-container" id="currentImageContainer">
+                <% product.productImage.forEach((image, index) => { %>
+                    <div class="image-preview-item">
+                        <img src="/uploads/product-images/<%= image %>" alt="Product image <%= index + 1 %>">
+                        <button type="button" class="delete-btn" data-image-id="<%= index %>">Delete</button>
+                    </div>
+                <% }); %>
+            </div>
+
+            <h3 class="section-title">Add New Images</h3>
+            <div class="image-preview-container" id="imagePreviewContainer">
+                <!-- New image previews will be added here -->
+            </div>
+            <input type="file" id="productImage" name="productImage" class="file-input" accept="image/*" multiple>
+            <label for="productImage" class="upload-label">Add Images</label>
+
+            <div id="croppedImageSection" style="display: none;">
+                <button type="button" id="saveCropBtn" class="crop-btn">Save Crop</button>
+            </div>
+        </div>
+        
+        <button type="submit" class="submit-btn">Update Product</button>
+    </form>
+</div>
+
+<!-- Include Cropper.js CSS and JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+<style>
+
+.image-preview-item {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    background-color: #2a2a2a;
+    border: 2px dashed #444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Ensure content doesn't overflow */
+    margin-bottom: 10px; /* Space between images */
+}
+
+.delete-btn {
+    position: absolute;
+    bottom: 0; /* Align button at the bottom of the image */
+    left: 50%;
+    transform: translateX(-50%); /* Center button horizontally */
+    background: transparent;
+    color: white; /* Black color for the icon */
+    font-size: 1 rem; /* Larger size for better visibility */
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    margin: 0;
+    z-index: 10; /* Ensure the button is above the image */
+}
+
+.delete-btn:hover {
+    color: #e53935; /* Change to red when hovering */
+    transition: color 0.3s ease;
+}
+
+.delete-btn:focus {
+    outline: none; /* Remove focus outline */
+}
+
+
+    .size-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+.size-btn {
+    padding: 0.5rem;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.size-btn:hover {
+    background-color: #333;
+}
+
+
+
+.size-btn.active {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+    #croppedImageSection {
+        display: none;
+        height: 80px; /* Reduced height to make it medium */
+        text-align: center;
+        margin-top: 10px;
+    }
+    .product-form-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #1a1a1a;
+        border-radius: 8px;
+    }
+
+    .form-title {
+        color: white;
+        margin-bottom: 2rem;
+        font-size: 1.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .form-left {
+        width: 100%;
+    }
+
+    .image-upload-section {
+        margin-top: 2rem;
+    }
+
+    .section-title {
+        color: white;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+    }
+
+    .image-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+
+
+    .image-preview-item img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .upload-label {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background-color: #2a2a2a;
+        color: white;
+        cursor: pointer;
+        border-radius: 4px;
+        text-align: center;
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .upload-label:hover {
+        background-color: #333;
+    }
+
+    .size-options {
+        color: white;
+        margin-top: 1.5rem;
+    }
+
+    .size-buttons {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .size-btn {
+        padding: 0.5rem;
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        color: white;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    .size-btn:hover {
+        background-color: #333;
+    }
+
+    .size-btn.active {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 4px;
+        color: white;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #4CAF50;
+    }
+
+    textarea.form-input {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .submit-btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .submit-btn:hover {
+        background-color: #45a049;
+    }
+
+    /* Add basic responsiveness */
+    @media (max-width: 768px) {
+        .product-form-container {
+            padding: 1rem;
+        }
+    }
+
+    .crop-btn {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+
+
+
+    .size-options {
+  margin-bottom: 1.5rem;
+}
+
+.size-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.size-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 70px;
+}
+
+.size-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #4a2d2d;
+  border: 2px solid #ddd;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 6px;
+}
+
+.size-btn:hover {
+  background-color: #3d0e0e;
+  border-color: #bbb;
+}
+
+.size-btn.selected {
+  background-color: #2c3e50;
+  color: rgb(76, 62, 62);
+  border-color: #2c3e50;
+}
+
+.size-quantity {
+  width: 60px;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.size-quantity:focus {
+  border-color: #2c3e50;
+  outline: none;
+}
+
+/* Make the size section responsive */
+@media (max-width: 768px) {
+  .size-container {
+    justify-content: center;
+  }
+  
+  .size-item {
+    width: 60px;
+  }
+}
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script>
+
+
+
+    let selectedSizes = "<%= JSON.stringify(product.sizes) %>"
+    let croppedFiles = [];
+    let cropper = null
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("form-data");
+    const imageContainer = document.getElementById("currentImageContainer");
+    const imageInput = document.getElementById("productImage");
+
+    // Handle deleting existing images
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+            this.parentElement.remove();
+            validateImageCount();
+        });
+    });
+
+    // Handle adding new images
+    imageInput.addEventListener("change", function () {
+        validateImageCount();
+    });
+
+    // Validate before form submission
+    form.addEventListener("submit", function (event) {
+        if (!validateImageCount()) {
+            event.preventDefault(); // Stop form submission
+            alert("At least 3 product images are required!");
+        }
+    });
+
+    function validateImageCount() {
+        const currentImages = document.querySelectorAll("#currentImageContainer .image-preview-item").length;
+        const newImages = imageInput.files.length;
+        const totalImages = currentImages + newImages;
+
+        console.log(`Current: ${currentImages}, New: ${newImages}, Total: ${totalImages}`);
+
+        if (totalImages < 3) {
+            return false; // Not enough images
+        }
+        return true;
+    }
+});
+
+
+    // Add event listeners to size buttons
+    document.querySelectorAll('.size-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const size = this.getAttribute('data-size');
+
+            // Toggle size selection
+            if (selectedSizes.includes(size)) {
+                selectedSizes = selectedSizes.filter(s => s !== size); // Remove size if already selected
+                this.classList.remove('active');
+            } else {
+                selectedSizes.push(size); // Add size if not selected
+                this.classList.add('active');
+            }
+        });
+    });
+
+    document.getElementById('productImage').addEventListener('change', function(e) {
+        const files = e.target.files;
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        
+        // Process each uploaded file
+        for (let file of files) {
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                // Create container for the image
+                const previewItem = document.createElement('div');
+                previewItem.classList.add('image-preview-item');
+                
+                // Create the image element
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.style.maxWidth = '100%';
+                img.style.cursor = 'pointer';
+                previewItem.appendChild(img);
+                
+                // Add to preview container
+                previewContainer.appendChild(previewItem);
+                
+                // Enable cropping when clicking the image
+                img.addEventListener('click', function() {
+                    initializeCropper(img);
+                });
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Make existing images croppable too
+    document.querySelectorAll('#currentImageContainer .image-preview-item img').forEach(img => {
+        img.style.cursor = 'pointer';
+        img.addEventListener('click', function() {
+            initializeCropper(img);
+        });
+    });
+
+    // Initialize cropper for an image
+    function initializeCropper(img) {
+        if (cropper) {
+            cropper.destroy();
+        }
+
+        // Show the crop button
+        document.getElementById('croppedImageSection').style.display = 'block';
+        
+        // Initialize Cropper.js
+        cropper = new Cropper(img, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 1,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+        });
+    }
+
+    // Handle save crop button click
+    document.getElementById('saveCropBtn').addEventListener('click', function() {
+        if (!cropper) return;
+
+        // Get the cropped canvas
+        const canvas = cropper.getCroppedCanvas({
+            width: 600,    // Set maximum dimensions for the cropped image
+            height: 600,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+        });
+
+        canvas.toBlob((blob) => {
+
+            const fileName = `cropped_${Date.now()}.png`;
+            const croppedFile = new File([blob], fileName, { type: 'image/png' });
+
+            const previewItem = document.createElement('div');
+            previewItem.classList.add('image-preview-item');
+            
+            const previewImage = document.createElement('img');
+            previewImage.src = URL.createObjectURL(croppedFile);
+            previewImage.style.maxWidth = '100%';
+            previewItem.appendChild(previewImage);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.classList.add('delete-btn');
+            deleteBtn.addEventListener('click', function() {
+                previewItem.remove();
+                croppedFiles = croppedFiles.filter(file => file !== croppedFile);
+            });
+            previewItem.appendChild(deleteBtn);
+
+            document.getElementById('imagePreviewContainer').appendChild(previewItem);
+
+            croppedFiles.push(croppedFile);
+
+            cropper.destroy();
+            cropper = null;
+            document.getElementById('croppedImageSection').style.display = 'none';
+        }, 'image/png', 0.9);
+    });
+
+    document.querySelectorAll('#currentImageContainer .delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const imageContainer = this.closest('.image-preview-item');
+            if (imageContainer) {
+                imageContainer.remove();
+            }
+        });
+    });
+
+    document.querySelector('.product-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    document.querySelectorAll('#currentImageContainer .image-preview-item img').forEach(img => {
+        formData.append('existingImages[]', img.getAttribute('data-filename') || img.src.split('/').pop());
+    });
+
+    // const imageInput = document.getElementById('productImage');
+    // if (imageInput.files.length > 0) {
+    //     for (let file of imageInput.files) {
+    //         formData.append('productImage', file);
+    //     }
+    // }
+
+    croppedFiles.forEach(file => {
+        formData.append('productImage', file);
+    });
+
+    for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]); 
+    }
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Product Updated!',
+            text: 'Your product has been updated successfully.',
+            confirmButtonColor: '#28a745'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/admin/products';
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'There was a problem updating the product. Please try again.',
+            confirmButtonColor: '#ff3b30'
+        });
+    });
+});
+
+</script>

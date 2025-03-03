@@ -1,0 +1,261 @@
+<%- include('partials/user/header') %>
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        body {
+            background-color: #f4f4f8;
+        }
+        .wallet-card {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .transaction-row {
+            transition: background-color 0.2s ease;
+        }
+        .transaction-row:hover {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-xl wallet-card">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Wallet Balance</h1>
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 100-4 2 2 0 000 4z"></path>
+                    </svg>
+                    <span class="text-2xl font-bold text-gray-900">
+                        ₹<%= walletBalance %>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Add Money Button -->
+            <div class="mb-6">
+                <button id="addMoneyBtn" class="flex items-center justify-center w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add Money to Wallet
+                </button>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-4">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Transaction History</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-gray-600">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="py-3 px-4 text-left font-semibold">Transaction</th>
+                                <th class="py-3 px-4 text-left font-semibold">Date</th>
+                                <th class="py-3 px-4 text-right font-semibold">Amount</th>
+                            </tr>
+                        </thead>
+                        
+                        <tbody>
+                            <% transactions.forEach(function(transaction) { %>
+                            <tr class="transaction-row border-b border-gray-100">
+                                <td class="py-3 px-4"><%= transaction.type %></td>
+                                <td class="py-3 px-4 text-gray-500"><%= transaction.createdAt %></td>
+                                <td class="py-3 px-4 text-right <%= transaction.type.toLowerCase() === 'debit' ? 'text-red-600' : 'text-green-600' %>">
+                                    ₹<%= Math.abs(transaction.amount).toLocaleString() %>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Money Modal -->
+<div id="addMoneyModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 transform transition-all">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Add Money to Wallet</h3>
+                <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="addMoneyForm">
+                <div class="mb-4">
+                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">Amount (₹)</label>
+                    <input type="number" id="amount" name="amount" min="1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Enter amount" required>
+                </div>
+                
+                <div class="mb-6">
+                    <p class="text-sm text-gray-500 mb-2">Quick amounts:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" class="quick-amount px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 font-medium transition-all" data-amount="100">₹100</button>
+                        <button type="button" class="quick-amount px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 font-medium transition-all" data-amount="500">₹500</button>
+                        <button type="button" class="quick-amount px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 font-medium transition-all" data-amount="1000">₹1000</button>
+                        <button type="button" class="quick-amount px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 font-medium transition-all" data-amount="2000">₹2000</button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+                    Proceed to Payment
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+
+
+<script>
+
+
+document.addEventListener('DOMContentLoaded', function() {
+        const addMoneyBtn = document.getElementById('addMoneyBtn');
+        const addMoneyModal = document.getElementById('addMoneyModal');
+        const closeModal = document.getElementById('closeModal');
+        const addMoneyForm = document.getElementById('addMoneyForm');
+        const amountInput = document.getElementById('amount');
+        const quickAmountBtns = document.querySelectorAll('.quick-amount');
+        
+
+        addMoneyBtn.addEventListener('click', function() {
+            addMoneyModal.classList.remove('hidden');
+        });
+        
+
+        closeModal.addEventListener('click', function() {
+            addMoneyModal.classList.add('hidden');
+        });
+        
+
+        addMoneyModal.addEventListener('click', function(e) {
+            if (e.target === addMoneyModal) {
+                addMoneyModal.classList.add('hidden');
+            }
+        });
+
+        quickAmountBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const amount = this.getAttribute('data-amount');
+                amountInput.value = amount;
+            });
+        });
+        
+        addMoneyForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const amount = amountInput.value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/add-money', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount: amount })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+        
+                    const options = {
+                        key: data.key_id,
+                        amount: data.order.amount,
+                        currency: data.order.currency,
+                        name: "VOGUE VAULT",
+                        description: "Wallet Recharge",
+                        order_id: data.order.id,
+                        handler: async function(response) {
+                      
+                            const verifyResponse = await fetch('/verify-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            });
+                            
+                            const verifyData = await verifyResponse.json();
+                            
+                            if (verifyData.success) {
+
+                                Swal.fire({
+                                    title: "Success!",
+                                    text: "Money added to wallet successfully!",
+                                    icon: "success",
+                                    confirmButtonText: "OK"
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: "Error!",
+                                    text: "Payment verification failed!",
+                                    icon: "error",
+                                    confirmButtonText: "Try Again"
+                                });
+                            }
+
+                        },
+                        prefill: {
+                            name: data.user?.name || "",
+                            email: data.user?.email || "",
+                            contact: data.user?.phone || ""
+                        },
+                        theme: {
+                            color: "#3399cc"
+                        }
+                    };
+                    
+                    const razorpay = new Razorpay(options);
+                    razorpay.open();
+
+                    addMoneyModal.classList.add('hidden');
+                } else {
+                    alert(data.message || 'Failed to create payment order');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong. Please try again.');
+            }
+        });
+    });
+
+
+
+</script>
+
+
+
+</html>

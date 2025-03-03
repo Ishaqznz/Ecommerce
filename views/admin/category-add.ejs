@@ -1,0 +1,124 @@
+<%- include('./user/partials/admin/header') %>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-3 mt-60">
+            <form id="category-form">
+                <div class="mb-4 mt-30">
+                    <label for="categoryName" class="form-label">Name</label>
+                    <input type="text" name="categoryName" class="form-control" id="categoryName" required />
+                </div>
+                <div class="mb-4">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea name="description" class="form-control" id="description" required></textarea>
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-primary" type="submit" id="create-category">Create category</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-8 mt-60">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Offer Price</th>
+                            <th>Offer</th>
+                            <th>Status</th>
+                            <th>List/Unlist</th>
+                            <th>Edit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% cat.reverse().forEach((category, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><%= category.name %></td>
+                            <td><%= category.description %></td>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-success btn-sm">Add Offer</button>
+                                <button class="btn btn-danger btn-sm">Remove</button>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">Listed</span>
+                                <span class="badge bg-danger">Unlisted</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger btn-sm">Unlist</button>
+                                <button class="btn btn-success btn-sm">List</button>
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-info text-white">Edit</a>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    const createCategory = document.getElementById('create-category')
+    createCategory.addEventListener('click', async (event) => {
+        event.preventDefault(); // Prevent default form submission
+
+        console.log('helloo');
+        
+    
+        const name = document.getElementById("categoryName").value;
+        const description = document.getElementById("description").value;
+    
+        try {
+            const response = await fetch("/addCategory", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, description })
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: data.message,
+                    confirmButtonColor: "#3085d6",
+                    timer: 2000
+                }).then(() => {
+                    location.reload(); // Reload page after success
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error!",
+                    text: data.error,
+                    confirmButtonColor: "#d33"
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Error!",
+                text: "Something went wrong!",
+                confirmButtonColor: "#d33"
+            });
+        }
+    })
+    
+    </script>
+<%- include('./user/partials/admin/footer') %>

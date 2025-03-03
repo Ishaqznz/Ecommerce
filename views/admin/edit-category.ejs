@@ -1,0 +1,41 @@
+<%- include('./user/partials/admin/header') %>
+
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 rounded-4 p-4">
+            <h2 class="text-center text-primary mb-4">Edit Category</h2>
+            <form method="post" action="/admin/editCategory/<%= category._id %>">
+                <!-- Category Name -->
+                <div class="mb-4">
+                    <label for="product_name" class="form-label fw-bold">Category Name</label>
+                    <input type="text" name="categoryname" value="<%= category.name %>" 
+                           class="form-control border rounded-pill shadow-sm px-3 py-2" required />
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Description</label>
+                    <textarea name="description" 
+                              class="form-control border rounded-3 shadow-sm px-3 py-2" required>
+                        <%= category.description %>
+                    </textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="/admin/category" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    <button class="btn btn-primary px-4 py-2 rounded-pill" type="submit">
+                        <i class="fas fa-save"></i> Update Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('./user/partials/admin/footer') %>
+
+<!-- FontAwesome for Icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>

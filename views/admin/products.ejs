@@ -1,0 +1,622 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Male Fashion - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --primary-color: #4169E1;
+            --sidebar-bg: #fff;
+            --content-bg: #f8f9fa;
+            --dark-bg: #333;
+            --success-color: #98FB98;
+        }
+
+        body {
+            background-color: var(--content-bg);
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid rgba(0,0,0,0.1);
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: #ff0000;
+        }
+
+        .nav-link {
+            color: #666;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(65, 105, 225, 0.1);
+            color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Area */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        /* Top Search Bar */
+        .search-header {
+            background: var(--primary-color);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+        }
+
+        .search-header input {
+            width: 100%;
+            max-width: 600px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 0 30px 30px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .content-title {
+            font-size: 28px;
+            color: #333;
+            margin: 0;
+        }
+
+        .search-products {
+            width: 300px;
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .btn-add-product {
+            background: var(--success-color);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        /* Table Styles */
+        .product-table {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background: var(--dark-bg);
+            color: #fff;
+            font-weight: 500;
+            padding: 15px;
+            border: none;
+        }
+
+        .table td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #eee;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        /* Color Dots */
+        .color-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .dot.red { background-color: #ff4444; }
+        .dot.black { background-color: #000; }
+        .dot.blue { background-color: #4444ff; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .pagination a, .pagination span {
+            padding: 8px 16px;
+            background: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #666;
+            min-width: 40px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .pagination a:hover {
+            background: rgba(65, 105, 225, 0.1);
+            color: var(--primary-color);
+        }
+
+        .pagination .current-page {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        /* Alert Styles */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        /* Action Buttons */
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: none;
+        }
+
+        .btn-edit {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ff4444;
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-wrapper {
+                margin-left: 0;
+            }
+
+            .content-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .search-products {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <a href="/admin/dashboard" class="logo">
+            Male fashion<span>.</span>
+        </a>
+        <div class="nav-links">
+            <a href="/admin/dashboard" class="nav-link">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="/admin/users" class="nav-link">
+                <i class="fas fa-users"></i>
+                Customers
+            </a>
+            <a href="/admin/category" class="nav-link">
+                <i class="fas fa-tag"></i>
+                Category
+            </a>
+            <!-- <a href="/admin/brands" class="nav-link">
+                <i class="fas fa-star"></i>
+                Brands
+            </a> -->
+            <a href="/admin/products" class="nav-link active">
+                <i class="fas fa-box"></i>
+                Products
+            </a>
+            <a href="/admin/coupon" class="nav-link">
+                <i class="fas fa-ticket-alt"></i>
+                Coupon
+            </a>
+            <!-- <a href="/admin/banner" class="nav-link">
+                <i class="fas fa-image"></i>
+                Banner
+            </a> -->
+            <a href="/admin/orderList" class="nav-link">
+                <i class="fas fa-shopping-cart"></i>
+                Orders
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <!-- Top Search Bar -->
+        <div class="search-header">
+            <input type="text" placeholder="Search...">
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="content-header">
+                <h1 class="content-title">Products</h1>
+                <div class="search-bar">
+                    <form action="/admin/products" method="get">
+                        <input type="text" name="search" class="search-products" placeholder="Search Products" value="<%=search%>">
+                    </form>
+                </div>
+                <% if (message && message.length > 0) { %>
+                    <div class="alert alert-success"><%= message %></div>
+                <% } %>
+                <a href="/admin/products/addProducts" class="btn-add-product">
+                    ADD PRODUCT +
+                </a>
+            </div>
+
+            <div class="product-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>PRODUCT IMAGE</th>
+                            <th>PRODUCT NAME</th>
+                            <th>PRODUCT CATEGORY</th>
+                            <th>PIECE</th>
+                            <th>AMOUNT</th>
+                            <th>LAST UPDATED</th>
+                            <th>Offer</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <%for(let i=data.length-1;i>=0;i--){%>
+                            <tr>
+                                <td>#<%=data[i]._id.toString().slice(-5)%></td>
+                                <td>
+                                    <img src="/uploads/product-images/<%= data[i].productImage?.[0] ? data[i].productImage[0] : 'default-image.jpg' %>" 
+                                    alt="<%= data[i].productName %>" 
+                                    class="product-image">
+                               
+                               
+                                </td>
+                                <td><%=data[i].productName%></td>
+                                <td><%=data[i].category.name%></td>
+                                <td><%=data[i].quantity%></td>
+                                <td>$<%=data[i].salePrice%></td>
+                                <td><%=new Date(data[i].updatedAt).toLocaleDateString()%></td>
+                                <td>
+                                    <% if (data[i].productOffer) { %>
+                                        <%= data[i].productOffer %>% OFF
+                                        <button class="btn btn-danger btn-sm" onclick="removeOffer('<%= data[i]._id %>')">
+                                            Remove Offer
+                                        </button>
+                                    <% } else { %>
+                                        No Offer
+                                    <% } %>
+                                </td>                                
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="/admin/products/editProduct/<%=data[i]._id%>" class="btn btn-icon btn-edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-icon btn-delete" onclick="removeProduct('<%=data[i]._id%>')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="btn btn-icon btn-offer" onclick="openOfferModal('<%= data[i]._id %>', '<%= data[i].productName %>')">
+                                            <i class="fas fa-tag"></i> <!-- Offer Icon -->
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <%}%>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <% if (parseInt(currentPage) > 1) { %>
+                    <a href="/admin/products?page=<%= parseInt(currentPage) - 1 %><%= search ? '&search=' + search : '' %>">
+                        &laquo; Previous
+                    </a>
+                <% } %>
+                
+                <% for (let i = 1; i <= parseInt(totalPages); i++) { %>
+                    <% if (i === parseInt(currentPage)) { %>
+                        <span class="current-page"><%= i %></span>
+                    <% } else { %>
+                        <a href="/admin/products?page=<%= i %><%= search ? '&search=' + search : '' %>">
+                            <%= i %>
+                        </a>
+                    <% } %>
+                <% } %>
+                
+                <% if (parseInt(currentPage) < parseInt(totalPages)) { %>
+                    <a href="/admin/products?page=<%= parseInt(currentPage) + 1 %><%= search ? '&search=' + search : '' %>">
+                        Next &raquo;
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Offer Modal -->
+<div class="modal fade" id="offerModal" tabindex="-1" aria-labelledby="offerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="offerModalLabel">Add product Offer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="offerForm">
+                
+                <div class="modal-body">
+                    <input type="hidden" id="categoryId" name="categoryId">
+                    <div class="mb-3">
+                        <label for="offerPercentage" class="form-label">Offer Percentage</label>
+                        <input type="number" class="form-control" id="offerPercentage" name="offerPercentage" 
+                               min="1" max="99" required>
+                        <div class="form-text">Enter a value between 1 and 99</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Offer</button>
+                </div>
+  
+            </form>
+        </div>
+    </div>
+  </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+
+
+async function removeOffer(productId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to remove the offer for this product?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, remove it!",
+        cancelButtonText: "No, keep it",
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6"
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch("/admin/removeProductOffer", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ productId }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire("Deleted!", "The offer has been removed.", "success")
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire("Error!", result.message, "error");
+                }
+            } catch (error) {
+                console.error("Error removing offer:", error);
+                Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+            }
+        }
+    });
+}
+
+function openOfferModal(productId, productName) {
+    document.getElementById("offerModalLabel").innerText = `Add Offer for ${productName}`;
+    document.getElementById("categoryId").value = productId;
+    document.getElementById("offerPercentage").value = "";
+    var offerModal = new bootstrap.Modal(document.getElementById("offerModal"));
+    offerModal.show();
+}
+      
+
+document.getElementById("offerForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const productId = document.getElementById("categoryId").value;
+    const offerPercentage = document.getElementById("offerPercentage").value;
+
+    if (!offerPercentage || offerPercentage < 1 || offerPercentage > 99) {
+        Swal.fire({ icon: "error", title: "Invalid Offer", text: "Enter a value between 1 and 99." });
+        return;
+    }
+
+    try {
+        const response = await fetch("/admin/addProductOffer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId, offerPercentage }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            Swal.fire({ icon: "success", title: "Offer Added!", text: "Offer has been successfully added." })
+                .then(() => location.reload());
+        } else {
+            Swal.fire({ icon: "error", title: "Error", text: result.message });
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        Swal.fire({ icon: "error", title: "Oops...", text: "Something went wrong!" });
+    }
+});
+
+
+function removeProduct(productId) {
+    if (!productId) {
+        Swal.fire('Error', 'Invalid product selection', 'error');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Delete Product',
+        text: 'Are you sure you want to delete this product?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading state
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Deleting product',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Make the AJAX call to delete the product
+            $.ajax({
+                url: `/admin/products/deleteProduct/${productId}`,
+                method: 'DELETE',
+                success: (response) => {
+                    if (response.status === true) {
+                        // Remove the row from the table
+                        $(`button[onclick="removeProduct('${productId}')"]`).closest('tr').remove();
+                        
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: 'Product has been deleted successfully',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: 'Product has been deleted successfully',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }) .then((response) => {
+                            window.location.href = '/admin/products'
+                        })
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Ajax error:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to delete product. Please try again.',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
+    });
+}
+
+    </script>
+
+</body>
+
+</html>

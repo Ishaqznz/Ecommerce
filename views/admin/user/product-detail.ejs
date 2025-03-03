@@ -1,0 +1,1211 @@
+<%- include('partials/user/header') %>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<style>
+    /* Footer Styles */
+
+/* Footer Styles */
+.product-detail-container {
+    padding: 40px 0;
+    background-color: #fff;
+}
+
+.main-image-container {
+    position: relative;
+    cursor: crosshair;
+}
+.image-zoom-result {
+    position: absolute;
+    top: 0;
+    left: 105%; /* Position it right next to the main image */
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    border: 1px solid #ddd;
+    display: none;
+    z-index: 1000;
+    background-color: #fff;
+    background-size: 200% 200%; /* Zoom level */
+}
+
+@media (max-width: 768px) {
+    .image-zoom-result {
+        display: none !important; /* Hide zoom on mobile */
+    }
+}
+
+.main-product-image {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+.thumbnail-container {
+    margin-top: 20px;
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.thumbnail-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.product-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.rating-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stars {
+    color: #ffd700;
+}
+
+.rating-count {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.price-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.current-price {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #e53637;
+}
+
+.original-price {
+    font-size: 1.2rem;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.discount-badge {
+    background-color: #e53637;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.detail-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.size-options {
+    display: flex;
+    gap: 10px;
+}
+
+.size-btn {
+    width: 45px;
+    height: 45px;
+    border: 1px solid #ddd;
+    background: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.size-btn:hover {
+    border-color: #e53637;
+    color: #e53637;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+}
+
+.qty-btn {
+    width: 35px;
+    height: 35px;
+    border: 1px solid #ddd;
+    background: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.qty-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.qty-input {
+    width: 50px;
+    text-align: center;
+    border: none;
+    font-size: 1.1rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-buy-now, .btn-add-cart {
+    padding: 12px 35px;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-buy-now {
+    background-color: #e53637;
+    color: white;
+}
+
+.btn-buy-now:hover {
+    background-color: #d32f2f;
+    transform: translateY(-2px);
+}
+
+.btn-add-cart {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.btn-add-cart:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+}
+
+.btn-wishlist {
+    width: 45px;
+    height: 45px;
+    border: 1px solid #ddd;
+    background: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-wishlist:hover {
+    border-color: #e53637;
+    color: #e53637;
+}
+
+.product-description {
+    margin: 30px 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+.delivery-info {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.delivery-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #666;
+}
+
+.delivery-item i {
+    color: #e53637;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-buy-now, .btn-add-cart {
+        width: 100%;
+    }
+    
+    .btn-wishlist {
+        width: 100%;
+        border-radius: 25px;
+    }
+}
+
+.footer {
+    background-color: #111;
+    color: #fff;
+    padding: 50px 0;
+    font-family: Arial, sans-serif;
+}
+
+.footer .container {
+    width: 90%;
+    margin: auto;
+    max-width: 1200px;
+}
+
+.footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.footer-col {
+    flex: 1;
+    margin: 20px;
+    min-width: 220px;
+}
+
+.footer-about h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.footer-about .dot {
+    color: #e53637;
+    font-size: 30px;
+}
+
+.footer-about p {
+    color: #b7b7b7;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+
+
+.footer-col h6 {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: 12px;
+}
+
+.footer-col ul li a {
+    color: #b7b7b7;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.footer-col ul li a:hover {
+    color: #ffffff;
+    padding-left: 5px;
+}
+
+.footer-newsletter form {
+    display: flex;
+    border-bottom: 2px solid #333;
+    padding-bottom: 5px;
+}
+
+.footer-newsletter input {
+    background: transparent;
+    border: none;
+    width: 100%;
+    padding: 8px 0;
+    color: #b7b7b7;
+    font-size: 14px;
+}
+
+.footer-newsletter input::placeholder {
+    color: #b7b7b7;
+}
+
+.footer-newsletter input:focus {
+    outline: none;
+}
+
+.footer-newsletter button {
+    background: transparent;
+    border: none;
+    color: #b7b7b7;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 5px;
+    transition: color 0.3s ease;
+}
+
+.footer-newsletter button:hover {
+    color: #ffffff;
+}
+
+.footer-bottom {
+    text-align: center;
+    color: #b7b7b7;
+    font-size: 14px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+}
+
+.footer-bottom a {
+    color: #e53637;
+    text-decoration: none;
+}
+
+.footer-bottom a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer-row {
+        flex-direction: column;
+    }
+
+    .footer-col {
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .payment-icons {
+        justify-content: center;
+    }
+
+    .footer-newsletter form {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+}
+
+.footer {
+    background-color: #111;
+    color: #fff;
+    padding: 50px 0;
+    font-family: Arial, sans-serif;
+}
+
+.footer .container {
+    width: 90%;
+    margin: auto;
+    max-width: 1200px;
+}
+
+.footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.footer-col {
+    flex: 1;
+    margin: 20px;
+    min-width: 220px;
+}
+
+.footer-about h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.footer-about .dot {
+    color: red;
+    font-size: 30px;
+}
+
+.footer-about p {
+    font-size: 14px;
+    color: #bbb;
+    line-height: 1.6;
+}
+
+
+
+.footer-col h6 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+}
+
+.footer-col ul li a {
+    text-decoration: none;
+    color: #bbb;
+    transition: color 0.3s;
+}
+
+.footer-col ul li a:hover {
+    color: #fff;
+}
+
+.footer-newsletter form {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #666;
+    padding-bottom: 5px;
+}
+
+.footer-newsletter input {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: none;
+    color: #fff;
+    font-size: 14px;
+}
+
+.footer-newsletter button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 14px;
+    color: #777;
+}
+
+.footer-bottom a {
+    color: red;
+    text-decoration: none;
+}
+
+.footer-bottom a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer-row {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-col {
+        margin: 10px 0;
+    }
+
+    .footer-newsletter form {
+        justify-content: center;
+    }
+
+    .footer-newsletter input {
+        text-align: center;
+    }
+}
+
+</style>
+
+<!DOCTYPE html>
+<html lang="zxx">
+
+
+<!-- Add this CSS -->
+<style>
+    .product-image {
+        width: 100%;
+        height: auto;
+        transition: transform 0.3s ease;
+    }
+    
+    .product-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .product__item__text h6 a {
+        color: inherit;
+        text-decoration: none;
+    }
+    
+    .product__item__text h6 a:hover {
+        color: #717fe0;
+    }
+    .payment {
+        width: 200px;
+        height: 30px;
+    }
+    .main-image-container {
+    position: relative;
+    cursor: crosshair;
+}
+
+    .image-zoom-result {
+        position: absolute;
+        top: 0;
+        left: 105%; /* Position it right next to the main image */
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        border: 1px solid #ddd;
+        display: none;
+        z-index: 1000;
+        background-color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .image-zoom-result {
+            display: none !important; /* Hide zoom on mobile */
+        }
+    }
+
+
+    .offer-badge {
+    background-color: red;
+    color: white;
+    font-size: 12px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    margin-left: 8px;
+    font-weight: bold;
+}
+
+
+.price-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: Arial, sans-serif;
+}
+
+.sale-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e60000;
+}
+
+.original-price {
+    font-size: 1.2rem;
+    text-decoration: line-through;
+    color: #888;
+}
+
+.discount {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #008000; 
+    background: #dff0d8;
+    padding: 3px 8px;
+    border-radius: 5px;
+}
+
+
+.size-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f0f0f0;
+}
+
+/* Add this to your CSS */
+.size-section {
+    margin-bottom: 1.5rem;
+}
+
+.detail-title {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.size-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.size-btn {
+  min-width: 60px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.size-btn:hover:not(.disabled) {
+  border-color: #333;
+}
+
+.size-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+
+.size-btn.active {
+  border-color: #333;
+  background: #333;
+  color: white;
+}
+
+.no-sizes-available {
+  width: 100%;
+  padding: 10px;
+}
+
+    </style>
+
+    
+
+<div class="product-detail-container">
+    <div class="container py-5">
+        <div class="row">
+            <!-- Product Images Column -->
+            <div class="col-md-6 mb-4">
+                <div class="main-image-container mb-3" id="imageContainer">
+                    <img src="/uploads/product-images/<%= product.productImage[0] %>" 
+                         alt="<%= product.productName %>" 
+                         class="main-product-image" 
+                         id="mainImage">
+                    <div class="image-zoom-result" id="zoomResult"></div>
+                </div>
+                <div class="thumbnail-container">
+                    <div class="row">
+                        <% product.productImage.forEach((image, index) => { %>
+                            <div class="col-3">
+                                <img src="/uploads/product-images/<%= image %>" 
+                                     alt="Product thumbnail" 
+                                     class="thumbnail-image"
+                                     onclick="changeMainImage(this.src)">
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Details Column -->
+            <div class="col-md-6">
+                <div class="product-info">
+                    <h1 class="product-title mb-3"><%= product.productName %></h1>
+                    
+                    <!-- Rating Section -->
+                    <div class="rating-section mb-3">
+                        <div class="stars">
+                            <% for(let i = 0; i < 5; i++) { %>
+                                <i class="fas fa-star"></i>
+                            <% } %>
+                        </div>
+                        <span class="rating-count">(150 Reviews)</span>
+                    </div>
+
+                    <!-- Price Section -->
+    
+                    <!-- Pricing -->
+                        <div class="price-container">
+                            <% if (typeof product.finalPrice !== 'undefined') { %>
+                                <span class="sale-price">₹<%= product.finalPrice.toLocaleString() %></span>
+
+                                <% if (product.originalPrice && product.originalPrice !== product.finalPrice) { %>
+                                    <span class="original-price">₹<%= product.originalPrice.toLocaleString() %></span>
+                                    <span class="discount"><%= product.maxDiscount %>% off</span>
+                                <% } %>
+                            <% } else { %>
+                                <span class="sale-price">Price Not Available</span>
+                            <% } %>
+                        </div>
+                        
+
+                    
+                        <div class="size-section mb-4">
+                            <h6 class="detail-title">Select Size</h6>
+                            <div class="size-options">
+                                <% 
+                                let anySizeAvailable = false;
+                                
+                                if (product && product.sizes) {
+                                    ['S', 'M', 'L', 'XL', 'XXL'].forEach(size => {
+                                        const stock = product.sizes[size] || 0;
+                                        if (stock > 0) anySizeAvailable = true;
+                                    });
+                        
+                                    if (anySizeAvailable) {
+                                        ['S', 'M', 'L', 'XL', 'XXL'].forEach(size => {
+                                            const stock = product.sizes[size] || 0;
+                                %>
+                                            <button class="size-btn <%= stock === 0 ? 'disabled' : '' %>" 
+                                                    <%= stock === 0 ? 'disabled' : '' %> 
+                                                    data-size="<%= size %>" 
+                                                    data-stock="<%= stock %>"
+                                                    onclick="selectSize('<%= size %>')">
+                                                <%= size %> <%= stock > 0 ? `(${stock})` : '(0)' %>
+                                            </button>
+                                        <% });
+                                    } else { %>
+                                        <div class="no-sizes-available alert alert-warning">
+                                            No sizes currently available for this product.
+                                        </div>
+                                    <% }
+                                } else { %>
+                                    <div class="no-sizes-available alert alert-warning">
+                                        Size is not available for this product.
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="action-buttons mb-4">
+                            <button class="btn-buy-now">Buy Now</button>
+                            <button class="btn-add-cart" id="addToCartBtn"
+                                    onclick="handleAddToCart('<%= product._id %>', '<%= product.finalPrice.toLocaleString() %>')">
+                                Add to Cart
+                            </button>
+                            <button class="btn-wishlist" onclick="addToWishList('<%= product._id %>')">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+
+
+
+                    <!-- Product Description -->
+                    <div class="product-description">
+                        <h6 class="detail-title">Product Details</h6>
+                        <p><%= product.description %></p>
+                    </div>
+
+                    <!-- Delivery Info -->
+                    <div class="delivery-info">
+                        <div class="delivery-item">
+                            <i class="fas fa-truck"></i>
+                            <span>Free Delivery</span>
+                        </div>
+                        <div class="delivery-item">
+                            <i class="fas fa-undo"></i>
+                            <span>30-Day Returns</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Footer Section Begin -->
+    
+    <!-- Footer Section -->
+<div class="footer">
+    <div class="container">
+        <div class="footer-row">
+            <!-- Brand Section -->
+            <div class="footer-col footer-about">
+                <h2>Male Fashion<span class="dot">.</span></h2>
+                <p>The customer is at the heart of our unique business model, which includes design.</p>
+                <div class="payment-icons">
+                
+                    <a href="#"><img src="/img/payment-info.png" alt="" class="payment"></a>
+                </div>
+            </div>
+
+            <!-- Shopping Links -->
+            <div class="footer-col">
+                <h6>SHOPPING</h6>
+                <ul>
+                    <li><a href="/clothing-store">Clothing Store</a></li>
+                    <li><a href="/trending-shoes">Trending Shoes</a></li>
+                    <li><a href="/accessories">Accessories</a></li>
+                    <li><a href="/sale">Sale</a></li>
+                </ul>
+            </div>
+
+            <!-- Shopping Info -->
+            <div class="footer-col">
+                <h6>SHOPPING</h6>
+                <ul>
+                    <li><a href="/contact">Contact Us</a></li>
+                    <li><a href="/payment-methods">Payment Methods</a></li>
+                    <li><a href="/delivery">Delivery</a></li>
+                    <li><a href="/return-exchanges">Return & Exchanges</a></li>
+                </ul>
+            </div>
+
+            <!-- Newsletter -->
+            <div class="footer-col">
+                <h6>NEWSLETTER</h6>
+                <p>Be the first to know about new arrivals, look books, sales & promos!</p>
+                <div class="footer-newsletter">
+                    <form>
+                        <input type="email" placeholder="Your email">
+                        <button type="submit">→</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="footer-bottom">
+            Copyright © <%= new Date().getFullYear() %> All rights reserved | This template is made with ♥ by 
+            <a href="https://colorlib.com" target="_blank">Colorlib</a>
+        </div>
+    </div>
+</div>
+
+
+    <script>
+
+let selectedSize = null;
+
+    function selectSize(size) {
+        selectedSize = size;
+        console.log("Selected size:", selectedSize);
+
+        // Highlight the selected size button (Optional UI Enhancement)
+        document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelector(`.size-btn[data-size="${size}"]`).classList.add('selected');
+    }
+
+    function handleAddToCart(productId, productPrice) {
+        if (!selectedSize) {
+            Swal.fire({
+                icon: "warning",
+                title: "Oops!",
+                text: "Please select a size before adding to the cart.",
+                confirmButtonColor: "#3085d6",
+            });
+            return;
+        }
+        addToCart(productId, productPrice, selectedSize);
+    }
+
+
+// Add this to your JavaScript file or inside a script tag
+document.addEventListener('DOMContentLoaded', function() {
+    // Size selection
+    const sizeButtons = document.querySelectorAll('.size-btn:not(.disabled)');
+    let selectedSize = null;
+    
+    sizeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            sizeButtons.forEach(b => b.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Store selected size
+            selectedSize = this.getAttribute('data-size');
+            console.log('Selected size:', selectedSize);
+            
+            // You can store this in a hidden input if needed
+            if (document.getElementById('selectedSize')) {
+                document.getElementById('selectedSize').value = selectedSize;
+            }
+        });
+    });
+    
+    // Add to cart and Buy now functionality
+    // const addToCartBtn = document.querySelector('.btn-add-cart');
+    // const buyNowBtn = document.querySelector('.btn-buy-now');
+    
+    function checkSizeSelected() {
+        const anySizeAvailable = document.querySelectorAll('.size-btn:not(.disabled)').length > 0;
+        
+        if (!anySizeAvailable) {
+            // Disable buttons if no sizes available
+            if (addToCartBtn) addToCartBtn.disabled = true;
+            if (buyNowBtn) buyNowBtn.disabled = true;
+            return;
+        }
+        
+        if (!selectedSize && anySizeAvailable) {
+            alert('Please select a size first');
+            return false;
+        }
+        return true;
+    }
+    
+    // Modify your existing functions to check for size
+    if (addToCartBtn) {
+        const originalAddToCart = addToCartBtn.onclick;
+        addToCartBtn.onclick = function(e) {
+            if (checkSizeSelected()) {
+                // Call original function or modify as needed
+                // You'll need to modify your addToCart function to include the size
+                addToCart(productId, price, selectedSize);
+            }
+            e.preventDefault();
+        };
+    }
+    
+    if (buyNowBtn) {
+        buyNowBtn.onclick = function(e) {
+            if (checkSizeSelected()) {
+                // Implement buy now functionality
+                // window.location.href = `/checkout?product=${productId}&size=${selectedSize}`;
+            }
+            e.preventDefault();
+        };
+    }
+});
+
+// Disable Add to Cart if no sizes available
+const anySizeAvailable = document.getElementById('anySizeAvailable').value === 'true';
+const addToCartBtn = document.querySelector('.add-to-cart-btn');
+if (!anySizeAvailable && addToCartBtn) {
+    addToCartBtn.disabled = true;
+    addToCartBtn.classList.add('disabled');
+    addToCartBtn.textContent = 'Out of Stock';
+}
+
+
+document.querySelectorAll('.size-btn:not(.disabled)').forEach(btn => {
+    btn.addEventListener('click', function() {
+
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+
+        this.classList.add('active');
+
+        const selectedSize = this.getAttribute('data-size');
+
+        if (document.getElementById('selectedSize')) {
+            document.getElementById('selectedSize').value = selectedSize;
+        }
+    });
+});
+
+
+        
+        function changeMainImage(src) {
+    document.getElementById('mainImage').src = src;
+}
+
+function updateQuantity(change) {
+    const input = document.getElementById('quantity');
+    const newValue = parseInt(input.value) + change;
+    if (newValue >= 1) {
+        input.value = newValue;
+    }
+}
+
+
+function zoom(e) {
+    const imageContainer = document.getElementById('imageContainer');
+    const mainImage = document.getElementById('mainImage');
+    const zoomResult = document.getElementById('zoomResult');
+    
+    // Get relative position of mouse
+    const rect = imageContainer.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Calculate percentage positions
+    const xPercent = (x / rect.width) * 100;
+    const yPercent = (y / rect.height) * 100;
+    
+    // Show zoom result
+    zoomResult.style.display = 'block';
+    
+    // Set background image and position
+    zoomResult.style.backgroundImage = `url(${mainImage.src})`;
+    zoomResult.style.backgroundSize = '200%';
+    zoomResult.style.backgroundPosition = `${xPercent}% ${yPercent}%`;
+}
+
+function hideZoom() {
+    const zoomResult = document.getElementById('zoomResult');
+    zoomResult.style.display = 'none';
+}
+
+// Add event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const imageContainer = document.getElementById('imageContainer');
+    
+    imageContainer.addEventListener('mousemove', zoom);
+    imageContainer.addEventListener('mouseleave', hideZoom);
+    
+    // Update zoom when changing main image
+    window.changeMainImage = function(src) {
+        document.getElementById('mainImage').src = src;
+    }
+});
+
+async function addToCart(productId, productPrice) {
+    
+        console.log('Selected size: ', selectedSize);
+        
+        // Add your cart functionality here
+        console.log('Adding product to cart:', productId);
+
+        try {
+       
+            const response = await fetch('/addto-Cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({ productId, productPrice, selectedSize }) 
+            });
+
+            const result = await response.json(); 
+            if (response.ok) {
+                Swal.fire({
+                title: "Added to Cart! ❤️",
+                text: "This product has been successfully added to your cart.",
+                icon: "success",
+                iconColor: "#ff4c4c",
+                showConfirmButton: false,
+                timer: 2000, 
+                toast: true,
+                position: "top-end",
+                background: "#f5f5f5",
+                color: "#333",
+                showClass: {
+                    popup: "animate__animated animate__fadeInDown"
+                },
+                hideClass: {
+                    popup: "animate__animated animate__fadeOutUp"
+                }
+            });
+            } else {
+                Swal.fire({
+                title: "Oops! Something went wrong",
+                text: error.message || "Please try again later.",
+                icon: "error",
+                iconColor: "#ff4c4c",
+                showConfirmButton: false,
+                timer: 2000, 
+                toast: true,
+                position: "top-end",
+                background: "#f5f5f5",
+                color: "#333",
+                showClass: {
+                    popup: "animate__animated animate__fadeInDown"
+                },
+                hideClass: {
+                    popup: "animate__animated animate__fadeOutUp"
+                }
+            });
+            }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                title: "Oops! Something went wrong",
+                text: error.message || "Please try again later.",
+                icon: "error",
+                iconColor: "#ff4c4c",
+                showConfirmButton: false,
+                timer: 2000, 
+                toast: true,
+                position: "top-end",
+                background: "#f5f5f5",
+                color: "#333",
+                showClass: {
+                    popup: "animate__animated animate__fadeInDown"
+                },
+                hideClass: {
+                    popup: "animate__animated animate__fadeOutUp"
+                }
+            });
+            }         
+        }
+
+
+    async function addToWishList(productId) {
+        try {
+            const response = await fetch('/addToWishList', {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({ productId })
+            });
+
+            const data = await response.json(); 
+
+            if (response.ok) {
+                Swal.fire({
+                    title: "Added to Wishlist! ❤️",
+                    text: "This product has been successfully added to your wishlist.",
+                    icon: "success",
+                    iconColor: "#ff4c4c",
+                    showConfirmButton: false,
+                    timer: 2000, 
+                    toast: true,
+                    position: "top-end",
+                    background: "#f5f5f5",
+                    color: "#333",
+                    showClass: {
+                        popup: "animate__animated animate__fadeInDown"
+                    },
+                    hideClass: {
+                        popup: "animate__animated animate__fadeOutUp"
+                    }
+                });
+            } else {
+                throw new Error(data.message || "Failed to add product to wishlist");
+            }
+        } catch (error) {
+            Swal.fire({
+                    title: "Oops! Something went wrong",
+                    text: error.message || "Please try again later.",
+                    icon: "error",
+                    iconColor: "#ff4c4c",
+                    showConfirmButton: false,
+                    timer: 2000, 
+                    toast: true,
+                    position: "top-end",
+                    background: "#f5f5f5",
+                    color: "#333",
+                    showClass: {
+                        popup: "animate__animated animate__fadeInDown"
+                    },
+                    hideClass: {
+                        popup: "animate__animated animate__fadeOutUp"
+                    }
+                });
+        }
+    }
+
+
+
+</script>
+    
+    
+</body>
+
+</html>
+
+
+
+
+

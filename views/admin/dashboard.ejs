@@ -1,0 +1,794 @@
+<%- include('./user/partials/admin/header') %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <canvas id="salesChart" width="400" height="200"></canvas>
+    <canvas id="orderStatusChart" width="400" height="200"></canvas>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+
+        body {
+            background-color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        #filter-date {
+            position: relative;
+            top: 70px;
+            right: 170px;
+
+        }
+
+        #pdf-report {
+            position: relative;
+            left: 140px;
+        }
+
+        #excel-report {
+            position: relative;
+            left: 120px;
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .card {
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 100%;
+        }
+        .card-header {
+            font-weight: bold;
+            background-color: #f8f9fa;
+            border-bottom: none;
+        }
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .card-percentage {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .icon {
+            font-size: 2rem;
+            margin-left: auto;
+        }
+        .text-success {
+            color: #28a745 !important;
+        }
+        .bg-light-blue {
+            background-color: #f0f7ff;
+        }
+        .bg-light-green {
+            background-color: #f0fff4;
+        }
+        .bg-light-yellow {
+            background-color: #fffde7;
+        }
+        .bg-light-red {
+            background-color: #fff5f5;
+        }
+        .date-picker {
+            max-width: 150px;
+        }
+        .btn-group me-2{
+            position: relative;
+            left: 300px;
+        }
+
+        #timing-filter {
+            position: relative;
+            right: 450px;
+        }
+
+        #calendar-filter {
+            position: relative;
+            right: 200px;
+            bottom: 60px;
+        }
+        .cal-2 {
+            position: relative;
+            bottom: 30px;
+        }
+        .reports {
+            position: relative;
+            bottom: 128px;
+        }
+
+
+        .bg-light-purple {
+            background-color: #f3e5f5;
+        }
+
+        .btn-group .btn.active {
+            background-color: #6c757d;
+            color: white;
+        }
+
+
+
+
+
+
+
+        
+
+        #salesChart {
+            max-height: 300px !important;
+            position: absolute;
+            top: 1000px;
+        }
+        #orderStatusChart {
+            max-height: 250px !important;
+            position: absolute;
+            top: 1300px;
+        }
+
+
+        #h3-el {
+            position: relative;
+            top: 45px;
+            left: 25px;
+        }
+
+
+
+
+
+
+
+
+        .card {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: #4a5568;
+    }
+
+    td, th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+
+
+    #top-products {
+        position: absolute;
+        top: 1700px;
+        left: 30px;
+        height: 500px;
+    }
+
+
+    #top-h2 {
+        position: absolute;
+        top: 1625px;
+        left: 30px;
+    }
+
+
+    #top-categories {
+        position: relative;
+        top: 1300px;
+        width: 94%;
+        left: 30px;
+    }
+
+    #top-cat {
+        position: relative;
+        top: 1280px;
+        left: 30px;
+    }
+
+
+    .div-for-space {
+        width: 100%;
+        height: 300px;
+        position: relative;
+        top: 1100px;
+    }
+
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="dashboard-title">Dashboard</h1>
+            </div>
+            <div class="col-md-4 text-end" id="filter-date">
+                <div class="btn-group me-2" role="group" id="timing-filter">
+                    <button type="button" class="btn btn-outline-secondary <%= data.selectedPeriod === 'all' ? 'active' : '' %>" data-period="all">All Time</button>
+                    <button type="button" class="btn btn-outline-secondary <%= data.selectedPeriod === '1day' ? 'active' : '' %>" data-period="1day">1 Day</button>
+                    <button type="button" class="btn btn-outline-secondary <%= data.selectedPeriod === '1week' ? 'active' : '' %>" data-period="1week">1 Week</button>
+                    <button type="button" class="btn btn-outline-secondary <%= data.selectedPeriod === '1month' ? 'active' : '' %>" data-period="1month">1 Month</button>
+                </div>
+                
+                <div class="d-inline-block me-2" id="calendar-filter">
+                    <input type="date" class="form-control date-picker d-inline-block" value="<%= data.startDate %>">
+                    <span class="mx-2">to</span>
+                    <input type="date" class="form-control date-picker d-inline-block" value="<%= data.endDate %>" id="cal-2">
+                </div>
+                
+                <div class="reports">
+                    <button class="btn btn-success me-2" id="excel-report">
+                        <i class="fas fa-file-excel me-1"></i> Excel Report
+                    </button>
+                    <button class="btn btn-danger" id="pdf-report">
+                        <i class="fas fa-file-pdf me-1"></i> PDF Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Total Sales -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-green">
+                    <div class="card-header">Total Sales</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value">₹<%= data.totalSales.toLocaleString() %></h2>
+                                <span class="text-success">
+                                    <i class="fas fa-arrow-up"></i> <%= data.totalSalesGrowth %>%
+                                </span>
+                            </div>
+                            <div class="icon text-success">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Orders -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-blue">
+                    <div class="card-header">Total Orders</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <h2 class="card-value"><%= data.totalOrders %></h2>
+                            <div class="icon text-primary">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancelled Orders -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-red">
+                    <div class="card-header">Cancelled Orders</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value"><%= data.cancelledOrders %></h2>
+                                <span class="card-percentage">
+                                    ₹<%= data.cancelledAmount.toLocaleString() %> (<%= data.cancelledPercentage %>%)
+                                </span>
+                            </div>
+                            <div class="icon text-danger">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Orders -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-yellow">
+                    <div class="card-header">Pending Orders</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value"><%= data.pendingOrders %></h2>
+                                <span class="card-percentage">
+                                    ₹<%= data.pendingAmount.toLocaleString() %> (<%= data.pendingPercentage %>%)
+                                </span>
+                            </div>
+                            <div class="icon text-warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Processing Orders -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-blue">
+                    <div class="card-header">Processing Orders</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value"><%= data.processingOrders %></h2>
+                                <span class="card-percentage">
+                                    ₹<%= data.processingAmount.toLocaleString() %> (<%= data.processingPercentage %>%)
+                                </span>
+                            </div>
+                            <div class="icon text-info">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivered Orders -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-green">
+                    <div class="card-header">Delivered Orders</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value"><%= data.deliveredOrders %></h2>
+                                <span class="card-percentage">
+                                    ₹<%= data.deliveredAmount.toLocaleString() %> (<%= data.deliveredPercentage %>%)
+                                </span>
+                            </div>
+                            <div class="icon text-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Users -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-blue">
+                    <div class="card-header">Total Users</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value"><%= data.totalUsers %></h2>
+                                <span class="text-success">
+                                    <i class="fas fa-arrow-up"></i> Active users
+                                </span>
+                            </div>
+                            <div class="icon text-primary">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+
+        <div class="row">
+            <!-- Total Discounts -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-purple">
+                    <div class="card-header">Total Discounts</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value">₹<%= data.totalDiscounts.toLocaleString() %></h2>
+                                <span class="card-percentage">
+                                    <%= data.discountPercentage %>% of total sales
+                                </span>
+                            </div>
+                            <div class="icon text-purple">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Active Coupons -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-green">
+                    <div class="card-header">Active Coupons</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value"><%= data.activeCoupons %></h2>
+                                <span class="text-success">
+                                    <i class="fas fa-check"></i> Currently Active
+                                </span>
+                            </div>
+                            <div class="icon text-success">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Expired Coupons -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-red">
+                    <div class="card-header">Expired Coupons</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value"><%= data.expiredCoupons %></h2>
+                                <span class="text-danger">
+                                    <i class="fas fa-ban"></i> Inactive
+                                </span>
+                            </div>
+                            <div class="icon text-danger">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Total Coupon Usage -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card bg-light-blue">
+                    <div class="card-header">Coupon Usage</div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h2 class="card-value"><%= data.totalCouponUsage %></h2>
+                                <span class="text-primary">
+                                    <i class="fas fa-shopping-cart"></i> Orders with coupons
+                                </span>
+                            </div>
+                            <div class="icon text-primary">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- grapgh and stats -->
+ 
+    </div>
+
+    
+    <h3 id="h3-el">Sales Overview Section</h3>
+
+            <!-- Sales Overview Section -->
+            <!-- <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="mb-0">Sales Overview</h5>
+                            
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salesChart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+        
+            <!-- Stats Grid -->
+            <!-- <div class="row g-3"> -->
+                <!-- Order Status Chart -->
+                <!-- <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="mb-0">Order Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="orderStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+         -->
+
+
+
+         <h2 class="text-2xl font-bold text-gray-800" id="top-h2">Best Selling Products (Top 10)</h2>
+
+
+<!-- Top 10 Best Selling Products -->
+<div class="card bg-white rounded-lg shadow-lg p-6 my-8"x id="top-products">
+    <div class="flex justify-between items-center mb-6">
+        
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3">Product Name</th>
+                    <th class="px-6 py-3">Category</th>
+                    <th class="px-6 py-3">Total Quantity Sold</th>
+                    <th class="px-6 py-3">Total Revenue</th>
+                    <th class="px-6 py-3">Order Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% topProducts.forEach(product => { %>
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">
+                            <%= product.productName %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <%= product.categoryInfo.name %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <%= product.totalQuantitySold %>
+                        </td>
+                        <td class="px-6 py-4">
+                            ₹<%= product.totalRevenue.toLocaleString() %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <%= product.orderCount %>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<h2 class="text-2xl font-bold text-gray-800" id="top-cat">Top 5 Best-Selling Categories</h2>
+
+<!-- Top Categories Section -->
+<div class="card bg-white rounded-lg shadow-lg p-6 my-8" id="top-categories">
+    <div class="flex justify-between items-center mb-6">
+       
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3">Category Name</th>
+                    <th class="px-6 py-3">Total Quantity Sold</th>
+                    <th class="px-6 py-3">Total Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% topCategories.forEach(category => { %>
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">
+                            <%= category.categoryInfo.name %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <%= category.totalQuantitySold %>
+                        </td>
+                        <td class="px-6 py-4">
+                            ₹<%= category.totalRevenue.toLocaleString() %>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="div-for-space">
+
+</div>
+
+
+               
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+
+    const salesData = {
+        pending: '<%= data.pendingAmount || 0 %>',
+        processing: '<%= data.processingAmount || 0 %>',
+        delivered: '<%= data.deliveredAmount || 0 %>',
+        cancelled: '<%= data.cancelledAmount || 0 %>'
+    };
+
+    const orderCounts = {
+        pending: '<%= data.pendingOrders || 0 %>',
+        processing: '<%= data.processingOrders || 0 %>',
+        delivered: '<%= data.deliveredOrders || 0 %>',
+        cancelled: '<%= data.cancelledOrders || 0 %>'
+    };
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Pending', 'Processing', 'Delivered', 'Cancelled'],
+            datasets: [{
+                label: 'Total Sales ($)',
+                data: [salesData.pending, salesData.processing, salesData.delivered, salesData.cancelled],
+                backgroundColor: ['#f39c12', '#3498db', '#2ecc71', '#e74c3c'],
+                borderColor: ['#d68910', '#2874a6', '#28b463', '#c0392b'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 50000, 
+                    ticks: {
+                        callback: function (value) {
+                            return value >= 1000 ? (value / 1000) + 'K' : value;  
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Sales Amount ($)',
+                        font: { weight: 'bold' }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Order Status',
+                        font: { weight: 'bold' }
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(orderStatusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Processing', 'Delivered', 'Cancelled'],
+            datasets: [{
+                label: 'Order Count',
+                data: [orderCounts.pending, orderCounts.processing, orderCounts.delivered, orderCounts.cancelled],
+                backgroundColor: ['#f39c12', '#3498db', '#2ecc71', '#e74c3c'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+});
+
+
+// for filtering
+
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('#timing-filter button');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const period = this.getAttribute('data-period');
+            
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+
+            this.classList.add('active');
+            
+            // this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
+            
+            window.location.href = `/admin?period=${period}`;
+        });
+    });
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const timingButtons = document.querySelectorAll("#timing-filter button");
+    const startDateInput = document.querySelector("#calendar-filter input:first-of-type");
+    const endDateInput = document.querySelector("#cal-2");
+    const excelButton = document.querySelector(".btn-success");
+    const pdfButton = document.querySelector(".btn-danger");
+
+    function updateDateRange(days) {
+        const today = new Date();
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - days);
+
+        const formatDate = (date) => date.toISOString().split('T')[0];
+
+        startDateInput.value = formatDate(startDate);
+        endDateInput.value = formatDate(today);
+    }
+
+    timingButtons.forEach((button, index) => {
+        button.addEventListener("click", function () {
+            timingButtons.forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+
+            if (index === 0) updateDateRange(1); 
+            else if (index === 1) updateDateRange(7);
+            else if (index === 2) updateDateRange(30); 
+        });
+    });
+
+    function getSelectedDates() {
+        let startDate = startDateInput.value;
+        let endDate = endDateInput.value;
+
+        if (!startDate || !endDate) {
+            alert("Please select valid dates before downloading the report.");
+            return null;
+        }
+
+        startDate = new Date(startDate).toISOString().split("T")[0]; 
+        endDate = new Date(endDate).toISOString().split("T")[0];
+
+        return { startDate, endDate };
+    }
+
+    excelButton.addEventListener("click", function () {
+        const dates = getSelectedDates();
+        if (dates) {
+            window.location.href = `/admin/orders/download/excel?startDate=${dates.startDate}&endDate=${dates.endDate}`;
+        }
+    });
+
+    pdfButton.addEventListener("click", function () {
+        const dates = getSelectedDates();
+        if (dates) {
+            window.location.href = `/admin/orders/download/pdf?startDate=${dates.startDate}&endDate=${dates.endDate}`;
+        }
+    });
+});
+
+
+
+</script>
+</body>
+</html>
