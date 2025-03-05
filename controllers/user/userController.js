@@ -414,16 +414,26 @@ const resetVerify = async (req, res) => {
 const getShopProducts = async (req, res) => {
     try {
         const user = req.session.user;
-        const products = await Product.find({}).populate('category').lean();
-        const userData = await User.findOne({ _id: user });
+        const page = parseInt(req.query.page) || 1;  
+        const limit = 6; 
+        const skip = (page - 1) * limit;
 
+        const totalItems = await Product.countDocuments({ isBlocked: false }); 
+        const totalPages = Math.ceil(totalItems / limit); 
+
+        const products = await Product.find({ isBlocked: false })
+            .populate('category')
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        const userData = await User.findOne({ _id: user });
         const categories = await Category.find({ isListed: true }).lean();
 
         const updatedProducts = products.map(product => {
             const originalPrice = product.regularPrice || 0;
-            const categoryDiscount = product.category?.categoryOffer || 0;  
-            const productDiscount = product.productOffer || 0;  
-
+            const categoryDiscount = product.category?.categoryOffer || 0;
+            const productDiscount = product.productOffer || 0;
             const maxDiscount = Math.max(categoryDiscount, productDiscount);
             const finalPrice = originalPrice > 0 ? Math.round(originalPrice * (1 - maxDiscount / 100)) : 0;
 
@@ -438,54 +448,68 @@ const getShopProducts = async (req, res) => {
         res.render('user/shop', {
             products: updatedProducts,
             user: userData,
-            categories  
+            categories,
+            categoryId: null,
+            selectedCategory: null,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                limit,
+                totalItems
+            }
         });
 
     } catch (error) {
-        console.log('Error while loading the shop page:', error);
+        console.error('Error while loading the shop page:', error);
         res.status(500).send('Internal Server Error');
     }
 };
 
 
 
+
+
 const getProductsByCategory = async (req, res) => {
-    
     try {
         const categoryId = req.params.categoryId;
         const user = req.session.user;
         const userData = await User.findOne({ _id: user });
 
+        const page = parseInt(req.query.page) || 1;
+        const limit = 6;
+        const skip = (page - 1) * limit;
 
-        const products = await Product.find({ category: categoryId })
-            .populate('category') 
+        const totalItems = await Product.countDocuments({ category: categoryId, isBlocked: false });
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const products = await Product.find({ category: categoryId, isBlocked: false })
+            .populate('category')
+            .skip(skip)
+            .limit(limit)
             .lean();
 
-            const categories = await Category.aggregate([
-                {
-                    $match: { isListed: true }
-                },
-                {
-                    $lookup: {
-                        from: 'products',
-                        localField: '_id',
-                        foreignField: 'category',
-                        as: 'products'
-                    }
-                },
-                {
-                    $project: {
-                        name: 1,
-                        categoryOffer: 1, 
-                        productCount: { $size: '$products' }
-                    }
+        const categories = await Category.aggregate([
+            { $match: { isListed: true } },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: 'category',
+                    as: 'products'
                 }
-            ]);
-            
+            },
+            {
+                $project: {
+                    name: 1,
+                    categoryOffer: 1,
+                    productCount: { $size: '$products' }
+                }
+            }
+        ]);
 
         const updatedProducts = products.map(product => {
             const originalPrice = product.regularPrice || 0;
-            const categoryDiscount = product.category?.categoryOffer || 0; 
+            const categoryDiscount = product.category?.categoryOffer || 0;
             const productDiscount = product.productOffer || 0;
 
             const maxDiscount = Math.max(categoryDiscount, productDiscount);
@@ -495,23 +519,24 @@ const getProductsByCategory = async (req, res) => {
                 ...product,
                 originalPrice,
                 finalPrice,
-                maxDiscount  
+                maxDiscount
             };
         });
-
-        console.log("Updated Products:", updatedProducts); 
 
         res.render('user/shop', {
             products: updatedProducts,
             user: userData,
             categories,
-            selectedCategory: categoryId
+            selectedCategory: categoryId,
+            pagination: { currentPage: page, totalPages, limit, totalItems }
         });
+
     } catch (error) {
-        console.log('Error while loading category products', error);
+        console.error('Error while loading category products', error);
         res.status(500).send('Internal Server Error');
     }
 };
+
 
 
 const getProductByPrice = async (req, res) => {
@@ -521,44 +546,46 @@ const getProductByPrice = async (req, res) => {
         let min = Number(minPrice) || 0;
         let max = Number(maxPrice) || 10000;
 
-        console.log('Received query:', req.query);
-
         const user = req.session.user;
         const userData = await User.findById(user);
         const categoriesOfShop = await Category.find({ isListed: true }).lean();
 
-        let query = {
-            salePrice: { $gte: min, $lte: max },
-            isBlocked: false,
-            status: 'Available'
-        };
+        const page = parseInt(req.query.page) || 1;
+        const limit = 6;
+        const skip = (page - 1) * limit;
 
+        let query = { isBlocked: false, status: 'Available' };
         if (categoryId) {
             query.category = categoryId;
         }
 
+        const totalItems = await Product.countDocuments(query);
+        const totalPages = Math.ceil(totalItems / limit);
+
         const listProducts = await Product.find(query)
             .populate('category')
             .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
             .lean();
 
-        console.log('Filtered Products:', listProducts);
+        const updatedProducts = listProducts
+            .map(product => {
+                const originalPrice = product.regularPrice || 0;
+                const categoryDiscount = product.category?.categoryOffer || 0;
+                const productDiscount = product.productOffer || 0;
 
-        const updatedProducts = listProducts.map(product => {
-            const originalPrice = product.regularPrice || 0;
-            const categoryDiscount = product.category?.categoryOffer || 0;  
-            const productDiscount = product.productOffer || 0;  
+                const maxDiscount = Math.max(categoryDiscount, productDiscount);
+                const finalPrice = originalPrice > 0 ? Math.round(originalPrice * (1 - maxDiscount / 100)) : 0;
 
-            const maxDiscount = Math.max(categoryDiscount, productDiscount);
-            const finalPrice = originalPrice > 0 ? Math.round(originalPrice * (1 - maxDiscount / 100)) : 0;
-
-            return {
-                ...product,
-                originalPrice,
-                finalPrice,
-                maxDiscount  
-            };
-        });
+                return {
+                    ...product,
+                    originalPrice,
+                    finalPrice,
+                    maxDiscount
+                };
+            })
+            .filter(product => product.finalPrice >= min && product.finalPrice <= max);
 
         res.render('user/shop', {
             products: updatedProducts,
@@ -566,7 +593,9 @@ const getProductByPrice = async (req, res) => {
             user: userData,
             minPrice: min,
             maxPrice: max,
-            categoryId: categoryId || null
+            categoryId: categoryId || null,
+            selectedCategory: null,
+            pagination: { currentPage: page, totalPages, limit, totalItems }
         });
 
     } catch (error) {
@@ -697,7 +726,8 @@ const getProductsBySearch = async (req, res) => {
             products: updatedProducts,
             categories: categoriesOfShop,
             user: userData,
-            searchQuery: query
+            searchQuery: query,
+            selectedCategory: null
         });
 
     } catch (error) {

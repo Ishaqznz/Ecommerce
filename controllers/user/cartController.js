@@ -5,9 +5,9 @@ const Cart = require('../../model/cartSchema')
 const Wishlist = require('../../model/wishlistSchema')
 
 const loadCart = async (req, res) => {
-
+    
     try {
-        console.log('cart session', req.session.user);
+        console.log('Cart session:', req.session.user);
 
         if (!req.session || !req.session.user) {
             return res.redirect('/');
@@ -17,7 +17,6 @@ const loadCart = async (req, res) => {
 
         let cart = await Cart.findOne({ userId }).populate('items.productId');
 
-        
         if (!cart) {
             cart = new Cart({
                 userId,
@@ -25,21 +24,21 @@ const loadCart = async (req, res) => {
             });
         }
 
-      
+        cart.items = cart.items.filter(item => item.productId && !item.productId.isBlocked);
+
         let subtotal = cart.items.reduce((sum, item) => {
-            return sum + (item.price * item.quantity);
+            return sum + (item.productId.salePrice * item.quantity);
         }, 0);
-        
 
         const TAX_RATE = 0; 
         let tax = subtotal * TAX_RATE;
-        let total = subtotal 
+        let total = subtotal;
 
         cart.subtotal = subtotal;
         cart.tax = tax;
         cart.total = total;
 
-        console.log('User Cart:', cart);
+        console.log('Filtered Cart:', cart);
 
         const userData = await User.findById(userId);
 
@@ -49,10 +48,11 @@ const loadCart = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error while loading the cart page', error);
+        console.error('Error while loading the cart page:', error);
         res.redirect('/pageNotFound');
     }
-}
+};
+
 
 const addToCart = async (req, res) => {
     try {

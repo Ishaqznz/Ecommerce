@@ -8,34 +8,58 @@ const env = require('dotenv').config()
 const mongoose = require('mongoose')
 
 const loadAddress = async (req, res) => {
-
     try {
-        
-        const user = req.session.user; 
+        const user = req.session.user;
         const userData = await User.findOne({ _id: user });
 
         if (!userData) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        console.log(user == userData._id);
-    
-   
-        const userAddressData = await Address.find({ userId: userData._id });
+        const page = parseInt(req.query.page) || 1;
+        const limit = 3;  
+        const skip = (page - 1) * limit;
 
-        console.log(userAddressData);
-        console.log('User Address:', JSON.stringify(userAddressData, null, 2));
-                
+        const userAddressData = await Address.findOne({ userId: userData._id });
+
+        if (!userAddressData || !userAddressData.address || userAddressData.address.length === 0) {
+            return res.render('user/add-address', {
+                user: userData,
+                userAddress: [],
+                pagination: {
+                    currentPage: 1,
+                    totalPages: 1,
+                    limit: limit,
+                    totalItems: 0
+                }
+            });
+        }
+
+        const totalItems = userAddressData.address.length;
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const paginatedAddresses = userAddressData.address.slice(skip, skip + limit);
+
+        console.log('Paginated Addresses:', JSON.stringify(paginatedAddresses, null, 2));
+
         res.render('user/add-address', {
             user: userData,
-            userAddress: userAddressData
-        })
+            userAddress: paginatedAddresses, 
+            pagination: {
+                currentPage: page,
+                totalPages: totalPages,
+                limit: limit,
+                totalItems: totalItems
+            }
+        });
 
     } catch (error) {
-        console.log('Error while loading the address section');
-        res.redirect('/pageNotFound')
+        console.error('Error while loading the address section:', error);
+        res.redirect('/pageNotFound');
     }
-}
+};
+
+
 
 
 const addAddress = async (req, res) => {

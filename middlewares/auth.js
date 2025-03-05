@@ -49,7 +49,7 @@ const userAuth = async (req, res, next) => {
                 return res.redirect('/')
             }
 
-            return res.render('user/home')
+            return res.redirect('/login')
         }
     } catch (error) {
         console.log('Error happened while authenticating user by using middleware', error);

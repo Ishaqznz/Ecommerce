@@ -442,7 +442,7 @@
         }
 
 
-        .shop-container {
+.shop-container {
     display: flex;
     gap: 2rem;
     padding: 2rem;
@@ -503,6 +503,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 1.5rem;
+    overflow-x: hidden;
 }
 
 
@@ -597,9 +598,8 @@ html, body {
 
 .product-card {
     position: relative;
+    height: 450px;
 }
-
-
 
 
 .size-options-modal {
@@ -995,6 +995,11 @@ html, body {
 
 
 
+.pagination-container  {
+    position: absolute;
+    top: 1100px;
+    left: 640px;
+}
     </style>
 
 
@@ -1090,6 +1095,8 @@ html, body {
                                 <span class="currency-symbol">₹</span>
                                 <input type="number" id="max-price" name="maxPrice" min="0" value="<%= locals.maxPrice || 10000 %>" class="price-input">
                             </div>
+
+                            <input type="text" name="categoryId" value="<%= selectedCategory %>" style="display: none;">
                         </div>
                         
                         <div class="slider-container">
@@ -1248,16 +1255,80 @@ html, body {
       </div>
     </div>
   </div>
+
+
+
+  
         
     </div>
+
+
+    <div class="pagination-container mt-5">
+        <nav aria-label="Product pagination">
+            <ul class="pagination justify-content-center">
+                <!-- Previous button -->
+                <li class="page-item <%= pagination.currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="/shop?page=<%= pagination.currentPage - 1 %>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+    
+                <!-- First Page -->
+                <% if (pagination.currentPage > 3) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="/shop?page=1">1</a>
+                    </li>
+                    <% if (pagination.currentPage > 4) { %>
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    <% } %>
+                <% } %>
+    
+                <!-- Page Numbers -->
+                <% for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) { %>
+                    <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="/shop?page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+    
+                <!-- Last Page -->
+                <% if (pagination.currentPage < pagination.totalPages - 2) { %>
+                    <% if (pagination.currentPage < pagination.totalPages - 3) { %>
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    <% } %>
+                    <li class="page-item">
+                        <a class="page-link" href="/shop?page=<%= pagination.totalPages %>"><%= pagination.totalPages %></a>
+                    </li>
+                <% } %>
+    
+                <!-- Next button -->
+                <li class="page-item <%= pagination.currentPage === pagination.totalPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="/shop?page=<%= pagination.currentPage + 1 %>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    
+        <div class="pagination-info text-center mt-2">
+            <span class="text-muted">
+                Showing <strong><%= (pagination.currentPage - 1) * pagination.limit + 1 %></strong> 
+                to <strong><%= Math.min(pagination.currentPage * pagination.limit, pagination.totalItems) %></strong> 
+                of <strong><%= pagination.totalItems %></strong> products
+            </span>
+        </div>
+    </div>
+    
     <!-- Shop Section End -->
 
-
+  
     
     <!-- Search Begin -->
     
     <!-- Search End -->
-
 
     
     <!-- Js Plugins -->
@@ -1281,6 +1352,8 @@ html, body {
 
 
     <script>
+
+
 
 
 // Add this to your JavaScript file

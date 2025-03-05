@@ -5,15 +5,35 @@ const Wallet = require('../../model/walletSchema')
 
 const loadOrderList = async (req, res) => {
     try {
-        const orders = await Order.find()
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip = (page - 1) * limit;
+        const searchQuery = req.query.search ? req.query.search.trim() : "";
+
+        let filter = {}; 
+
+        if (searchQuery) {
+            filter = {
+                $or: [
+                    { orderId: { $regex: searchQuery, $options: "i" } },  
+                    { status: { $regex: searchQuery, $options: "i" } },   
+                    { paymentMethod: { $regex: searchQuery, $options: "i" } } 
+                ]
+            };
+        }
+
+        const totalItems = await Order.countDocuments(filter);
+
+        const orders = await Order.find(filter)
             .populate({
                 path: 'userId',  
                 model: 'User',
-                select: 'name'  
+                select: 'name'
             })
-            .lean(); 
-
-        console.log('Orders after population:', orders); 
+            .sort({ createdOn: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
 
         const formattedOrders = orders.map(order => ({
             orderId: order.orderId,
@@ -24,13 +44,25 @@ const loadOrderList = async (req, res) => {
             paymentMethod: order.paymentMethod,
         }));
 
-        res.render('load-order-list', { orders: formattedOrders });
+        const totalPages = Math.ceil(totalItems / limit);
+
+        res.render('load-order-list', { 
+            orders: formattedOrders,
+            pagination: {
+                currentPage: page,
+                totalPages: totalPages,
+                limit: limit,
+                totalItems: totalItems,
+            },
+            searchQuery: searchQuery 
+        });
 
     } catch (error) {
         console.error('Error while loading order list:', error);
         res.redirect('/pageerror');
     }
 };
+
 
 const loadOrderDetails = async (req, res) => {
     

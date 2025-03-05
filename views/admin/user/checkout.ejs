@@ -138,6 +138,7 @@
             font-weight: 600;
             color: var(--gray-700);
             margin-bottom: 1rem;
+            margin-top: 10px;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -491,6 +492,7 @@
     text-decoration: underline;
     padding: 0;
     margin-left: 0.5rem;
+    color: white;
 }
 
 .remove-coupon:hover {
@@ -865,6 +867,297 @@
 
 
 
+
+
+    .add-address-btn {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+            bottom: 20px;
+        }
+
+        .add-address-btn:hover {
+            background: #c7d2e0;
+        }
+
+        .add-address-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .address-details {
+            display: flex;
+            gap: 0.5rem;
+            color: #444;
+        }
+
+        .address-details i {
+            margin-top: 4px;
+            color: #666;
+        }
+
+        .address-text p {
+            margin: 0 0 0.3rem;
+            line-height: 1.4;
+        }
+
+        .dropdown-item {
+            padding: 0.6rem 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .col-md-6 {
+                padding: 0 0.75rem;
+            }
+            
+            .address-card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        .dropdown-item i {
+            width: 16px;
+        }
+
+        .address-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .address-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .address-phone {
+            color: #666;
+        }
+
+        .address-actions {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .address-details {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .menu-dots {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .menu-dots:hover {
+            background: #f5f5f5;
+        }
+
+        /* adding modal styles */
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto; /* Enable scrolling if needed */
+        }
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 20px auto; /* Reduced top margin */
+            padding: 20px; /* Reduced padding */
+            width: 90%;
+            max-width: 500px; /* Reduced max-width */
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            margin-bottom: 15px; /* Reduced margin */
+            padding-bottom: 10px;
+        }
+
+    .modal-header h2 {
+        font-size: 1.5rem;
+        color: #333;
+        margin: 0;
+    }
+
+    .close-modal {
+        font-size: 28px;
+        cursor: pointer;
+        color: #666;
+        transition: color 0.3s;
+    }
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px; /* Reduced gap */
+        margin-bottom: 10px; /* Reduced margin */
+    }
+
+    .form-group {
+        margin-bottom: 10px; /* Reduced margin */
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 8px; /* Reduced padding */
+        font-size: 0.9rem; /* Smaller font size */
+    }
+
+    .form-group label {
+        margin-bottom: 4px; /* Reduced margin */
+        font-size: 0.9rem; /* Smaller font size */
+    }
+
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #4a90e2;
+    }
+
+    .form-actions {
+        margin-top: 15px; /* Reduced margin */
+        gap: 10px; /* Reduced gap */
+    }
+
+    .cancel-btn,
+    .save-btn {
+        padding: 8px 16px; /* Reduced padding */
+    }
+
+
+    .cancel-btn {
+        background-color: #f5f5f5;
+        color: #333;
+    }
+
+    .save-btn {
+        background-color: #4a90e2;
+        color: white;
+    }
+
+    .cancel-btn:hover {
+        background-color: #eee;
+    }
+
+    .save-btn:hover {
+        background-color: #357abd;
+    }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            margin: 10px auto; 
+            padding: 15px; 
+            width: 95%; 
+        }
+        .form-row {
+            grid-template-columns: 1fr; 
+            gap: 8px;
+        }
+    }
+
+    .add-address-btn {
+            display: flex;
+            align-items: center;
+            padding: 0.50rem 1.2rem;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+            right: 20px;
+        }
+
+        .add-address-btn:hover {
+           
+        }
+
+        .add-address-btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Address Card Styles */
+        .address-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+            height: 100%;
+        }
+
+        .address-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        .card-body {
+            padding: 0.5rem 1.5rem 1.5rem;
+        }
+
+        .address-type-badge {
+            font-size: 0.85rem;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .address-type-badge.home {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .address-type-badge.work {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+
+        
+        .removeCoupon {
+            border: 0px;
+            border-radius: 10px;
+            background-color: #1565c0;
+            padding: 5px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -903,14 +1196,21 @@
         </div>
     </div>
 
-
-
     <!-- header section end -->
      
     <div class="checkout-container">
         <div class="checkout-grid">
             <!-- Left Column -->
             <div class="main-content">
+
+                <div class="content-header">
+                    <button class="add-address-btn">
+                        <i class="fas fa-plus"></i>
+                        ADD A NEW ADDRESS
+                    </button>
+                </div>
+
+
                 <h2 class="section-title">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -1083,7 +1383,7 @@
                     <div class="summary-row" id="coupon-discount" style="display: none;">
                         <span>Coupon Discount</span>
                         <span class="dis-coupon" id="dis-coupon"></span>
-                        <button onclick="removeCoupon()">Remove Coupon</button>
+                        <button onclick="removeCoupon()" class="removeCoupon">Remove Coupon</button>
                     </div>
                     
                     
@@ -1097,6 +1397,77 @@
         </div>
     </div>
 
+
+    <!-- add address modal -->
+    <div class="modal" id="addressModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Address</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="addressForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addressType">Address Type*</label>
+                        <select name="addressType" id="addressType" required>
+                            <option value="">Select Type</option>
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="name">Full Name*</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                </div>
+    
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City*</label>
+                        <input type="text" id="city" name="city" required>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="landMark">Landmark*</label>
+                        <input type="text" id="landMark" name="landMark" required>
+                    </div>
+                </div>
+    
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="state">State*</label>
+                        <input type="text" id="state" name="state" required>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="pincode">Pincode*</label>
+                        <input type="number" id="pincode" name="pincode" required>
+                    </div>
+                </div>
+    
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone Number*</label>
+                        <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="altPhone">Alternate Phone*</label>
+                        <input type="tel" id="altPhone" name="altPhone" pattern="[0-9]{10}" required>
+                    </div>
+                </div>
+    
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="save-btn" id="save-btn">Save Address</button>
+                </div>
+            </form>
+        </div>
+        </div>
+    </div>
+
     <div class="footer-div">
         <%- include('partials/user/footer') %>
     </div>
@@ -1104,6 +1475,130 @@
 
     <script>
 
+
+const modal = document.getElementById('addressModal');
+const addAddressBtn = document.querySelector('.add-address-btn');
+const closeBtn = document.querySelector('.close-modal');
+const cancelBtn = document.querySelector('.cancel-btn');
+const addressForm = document.getElementById('addressForm');
+
+
+addAddressBtn.addEventListener('click', () => {
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; 
+});
+
+function closeModal() {
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto'; 
+    addressForm.reset(); 
+}
+
+
+closeBtn.addEventListener('click', closeModal);
+cancelBtn.addEventListener('click', closeModal);
+window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        closeModal();
+    }
+});
+
+
+
+// Form submission
+addressForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Basic form validation
+            const inputs = addressForm.querySelectorAll('input, select');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.style.borderColor = '#ff4444';
+                } else {
+                    input.style.borderColor = '#ddd';
+                }
+            });
+
+            const data = {
+                addressType: document.getElementById('addressType').value,
+                name: document.getElementById('name').value,
+                city: document.getElementById('city').value,
+                landMark: document.getElementById('landMark').value,
+                state: document.getElementById('state').value,
+                pincode: document.getElementById('pincode').value,
+                phone: document.getElementById('phone').value,
+                altPhone: document.getElementById('altPhone').value,
+            };
+
+
+            if (isValid) {
+                try {
+                    const response = await fetch('/addingAddress', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+                    if (response.ok) {
+
+
+                        Swal.fire({
+                            title: 'Success! 🎉',
+                            text: 'Your address has been successfully added.',
+                            icon: 'success',
+                            confirmButtonText: 'Great!',
+                            confirmButtonColor: '#28a745', 
+                            footer: '<a href="/help">Need help? Contact support</a>',
+                            backdrop: `rgba(0,0,0,0.6)`, 
+                            allowOutsideClick: false, 
+                            allowEscapeKey: false,
+                            showCancelButton: true,
+                            cancelButtonText: 'Cancel',
+                            cancelButtonColor: '#888',
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp'
+                            }
+                        });
+
+                        window.location.reload();
+                    } else {
+                        throw new Error('Failed to add address');
+                    }
+
+                } catch (error) {
+                    console.error('Error:', error);
+
+                    Swal.fire({
+                        title: 'Oops! Something went wrong 😢',
+                        text: 'We couldn\'t add your address. Please try again later.',
+                        icon: 'error',
+                        confirmButtonText: 'Try Again',
+                        confirmButtonColor: '#d33',
+                        footer: '<a href="/help">Need help? Contact support</a>',
+                        backdrop: `rgba(0,0,0,0.6)`, 
+                        allowOutsideClick: false, 
+                        allowEscapeKey: false,
+                        showCancelButton: true,
+                        cancelButtonText: 'Cancel',
+                        cancelButtonColor: '#888',
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutUp'
+                        }
+                    });
+                }
+            }
+        });
 
 function openCouponModal() {
         document.getElementById('coupon-modal').style.display = 'block';
@@ -1141,13 +1636,22 @@ async function removeCoupon(couponCode) {
     const result = await response.json()
 
     if (result.success) {
-        await alert('Coupon removed successfully!')
-        window.location.reload()
-        return;
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: result.message || 'Coupon removed successfully!',
+        }).then(() => {
+            window.location.reload();
+            return;
+        })
     }
 
-    alert('Error while removing the coupon!')
 
+    Swal.fire({
+            icon: 'Error',
+            title: 'Error',
+            text: result.message || 'Error while removing the coupon!!',
+    })
 }
 
 async function applyCoupon(productPrice) {
@@ -1211,7 +1715,11 @@ async function applyCoupon(productPrice) {
             const selectedAddress = document.querySelector('input[name="address"]:checked');
 
             if (!selectedAddress) {
-                alert('Please select an address before proceeding.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Address Required',
+                    text: 'Please select an address before proceeding.',
+                });
                 return;
             }
 

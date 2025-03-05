@@ -308,10 +308,6 @@
                 <i class="fas fa-ticket-alt"></i>
                 Coupon
             </a>
-            <!-- <a href="/admin/banner" class="nav-link">
-                <i class="fas fa-image"></i>
-                Banner
-            </a> -->
             <a href="/admin/orderList" class="nav-link">
                 <i class="fas fa-shopping-cart"></i>
                 Orders
@@ -323,7 +319,7 @@
     <div class="main-wrapper">
         <!-- Top Search Bar -->
         <div class="search-header">
-            <input type="text" placeholder="Search...">
+            
         </div>
 
         <!-- Content Area -->
@@ -353,7 +349,7 @@
                             <th>PRODUCT CATEGORY</th>
                             <th>PIECE</th>
                             <th>AMOUNT</th>
-                            <th>LAST UPDATED</th>
+                            <th>STATUS</th>
                             <th>Offer</th>
                             <th>ACTIONS</th>
                         </tr>
@@ -366,14 +362,18 @@
                                     <img src="/uploads/product-images/<%= data[i].productImage?.[0] ? data[i].productImage[0] : 'default-image.jpg' %>" 
                                     alt="<%= data[i].productName %>" 
                                     class="product-image">
-                               
-                               
                                 </td>
                                 <td><%=data[i].productName%></td>
                                 <td><%=data[i].category.name%></td>
                                 <td><%=data[i].quantity%></td>
                                 <td>$<%=data[i].salePrice%></td>
-                                <td><%=new Date(data[i].updatedAt).toLocaleDateString()%></td>
+                                <td>
+                                    <% if (data[i].isBlocked) { %>
+                                        <span class="badge bg-danger">Blocked</span>
+                                    <% } else { %>
+                                        <span class="badge bg-success">Active</span>
+                                    <% } %>
+                                </td>
                                 <td>
                                     <% if (data[i].productOffer) { %>
                                         <%= data[i].productOffer %>% OFF
@@ -393,8 +393,17 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                         <button class="btn btn-icon btn-offer" onclick="openOfferModal('<%= data[i]._id %>', '<%= data[i].productName %>')">
-                                            <i class="fas fa-tag"></i> <!-- Offer Icon -->
+                                            <i class="fas fa-tag"></i>
                                         </button>
+                                        <% if (data[i].isBlocked) { %>
+                                            <button class="btn btn-icon btn-success" onclick="toggleProductStatus('<%= data[i]._id %>', false)" title="Unblock Product">
+                                                <i class="fas fa-unlock"></i>
+                                            </button>
+                                        <% } else { %>
+                                            <button class="btn btn-icon btn-warning" onclick="toggleProductStatus('<%= data[i]._id %>', true)" title="Block Product">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        <% } %>
                                     </div>
                                 </td>
                             </tr>
@@ -465,6 +474,65 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
+
+
+
+async function toggleProductStatus(productId, blockStatus) {
+    if (!productId) return;
+
+    const confirmMessage = blockStatus
+        ? 'Are you sure you want to block this product? It will not be visible to customers.'
+        : 'Are you sure you want to unblock this product? It will be visible to customers.';
+
+    Swal.fire({
+        title: 'Confirm Action',
+        text: confirmMessage,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: blockStatus ? 'Yes, Block it' : 'Yes, Unblock it',
+        cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            await fetch(`/admin/products/toggle-status/${productId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isBlocked: blockStatus })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update product status');
+                }
+                return response.json();
+            })
+            .then(data => {
+                Swal.fire({
+                    title: data.success ? 'Success' : 'Error',
+                    text: data.message || (data.success ? 'Product status updated successfully' : 'Something went wrong'),
+                    icon: data.success ? 'success' : 'error',
+                    confirmButtonColor: '#3085d6'
+                }).then(() => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while updating the product status',
+                    icon: 'error',
+                    confirmButtonColor: '#d33'
+                });
+            });
+        }
+    });
+}
+
 
 
 async function removeOffer(productId) {

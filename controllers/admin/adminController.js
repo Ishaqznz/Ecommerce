@@ -84,7 +84,6 @@ const loadDashboard = async (req, res) => {
             }
         } : {};
 
-        console.log('Date Filter:', dateFilter); 
 
         const totalSales = await Order.aggregate([
             { $match: dateFilter },
@@ -270,13 +269,8 @@ const pageError = (req, res) => {
 
 const logout = (req, res) => {
     try {
-        req.session.destroy((err) => {
-            if (err) {
-                console.log('Error while destrying session', err);
-                return res.redirect('/pageError')
-            }
-            res.redirect('/admin/login')
-        })
+        req.session.admin = undefined
+        res.redirect('/admin/login')
     } catch (error) {
         console.log('Un expected error during logout', error);
         res.redirect('/admin/pageError')

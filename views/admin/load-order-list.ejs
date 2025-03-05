@@ -148,12 +148,14 @@
     <div class="orders-container">
         <div class="page-header">
             <h1 class="page-title" style="color: black;">Orders</h1>
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search orders">
-                <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
+                <div class="search-container">
+                    <form method="GET" action="/admin/orderList">
+                        <input type="text" name="search" class="search-input" 
+                            placeholder="Search by Order ID, Status, or Payment" 
+                            value="<%= searchQuery %>">
+                       
+                    </form>
+                </div>
         </div>
 
         <div class="orders-table">
@@ -192,6 +194,92 @@
                 </tbody>
             </table>
         </div>
+
+
+<!-- pagination -->
+
+<!--  Pagination -->
+<div class="pagination-wrapper my-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <!-- Pagination Info -->
+      <div class="pagination-info mb-3 mb-md-0">
+        <span class="text-secondary">
+          Showing <span class="fw-bold text-dark"><%= (pagination.currentPage - 1) * pagination.limit + 1 %></span> 
+          to <span class="fw-bold text-dark"><%= Math.min(pagination.currentPage * pagination.limit, pagination.totalItems) %></span> 
+          of <span class="fw-bold text-dark"><%= pagination.totalItems %></span> orders
+        </span>
+      </div>
+  
+      <!-- Pagination Controls -->
+      <nav aria-label="Order pagination">
+        <ul class="pagination pagination-md m-0">
+          <!-- Previous button -->
+          <li class="page-item <%= pagination.currentPage === 1 ? 'disabled' : '' %>">
+            <a class="page-link border-0 rounded-start" 
+               href="/admin/orderList?page=<%= pagination.currentPage - 1 %>&search=<%= searchQuery %>" 
+               aria-label="Previous">
+              <i class="bi bi-chevron-left small"></i>
+            </a>
+          </li>
+  
+          <% 
+          // Smart pagination that shows limited page numbers
+          let startPage = Math.max(1, pagination.currentPage - 2);
+          let endPage = Math.min(pagination.totalPages, startPage + 4);
+          
+          // Adjust start if we're near the end
+          if (endPage - startPage < 4 && startPage > 1) {
+            startPage = Math.max(1, endPage - 4);
+          }
+          
+          // Show first page and ellipsis if needed
+          if (startPage > 1) { %>
+            <li class="page-item">
+              <a class="page-link border-0" href="/admin/orderList?page=1&search=<%= searchQuery %>">1</a>
+            </li>
+            <% if (startPage > 2) { %>
+              <li class="page-item disabled">
+                <span class="page-link border-0">...</span>
+              </li>
+            <% } %>
+          <% } %>
+  
+          <!-- Page numbers -->
+          <% for (let i = startPage; i <= endPage; i++) { %>
+            <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+              <a class="page-link border-0 <%= pagination.currentPage === i ? 'rounded' : '' %>" 
+                 href="/admin/orderList?page=<%= i %>&search=<%= searchQuery %>"><%= i %></a>
+            </li>
+          <% } %>
+  
+          <!-- Show last page and ellipsis if needed -->
+          <% if (endPage < pagination.totalPages) { %>
+            <% if (endPage < pagination.totalPages - 1) { %>
+              <li class="page-item disabled">
+                <span class="page-link border-0">...</span>
+              </li>
+            <% } %>
+            <li class="page-item">
+              <a class="page-link border-0" 
+                 href="/admin/orderList?page=<%= pagination.totalPages %>&search=<%= searchQuery %>">
+                <%= pagination.totalPages %>
+              </a>
+            </li>
+          <% } %>
+  
+          <!-- Next button -->
+          <li class="page-item <%= pagination.currentPage === pagination.totalPages ? 'disabled' : '' %>">
+            <a class="page-link border-0 rounded-end" 
+               href="/admin/orderList?page=<%= pagination.currentPage + 1 %>&search=<%= searchQuery %>" 
+               aria-label="Next">
+              <i class="bi bi-chevron-right small"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
     </div>
 
     <script>

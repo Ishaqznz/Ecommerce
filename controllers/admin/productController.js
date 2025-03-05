@@ -10,7 +10,7 @@ const multer = require('multer');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'public/uploads/products');
+      cb(null, 'public/uploads/product-images');
     },
     filename: (req, file, cb) => {
       cb(null, Date.now() + '-' + file.originalname);
@@ -199,81 +199,6 @@ const getEditProduct = async (req, res) => {
 
 
 
-// const editProduct = async (req, res) => {
-//     const id = req.params.id;
-//     const {
-//         productName,
-//         productDescription,
-//         productCategory,
-//         regularPrice,
-//         salePrice,
-//         quantity,
-//         color,
-//         existingImages,
-//         sizes
-//     } = req.body;
-
-//     try {
-
-//         console.log('-------------');
-//         console.log("Product ID:", id);
-//         console.log("Request Body:", req.body);
-
-//         console.log('recieved files: ', req.files);
-        
-//         const categoryExists = await Category.findOne({ name: productCategory });
-//         if (!categoryExists) {
-//             return res.status(400).json({ message: "Category does not exist!" });
-//         }
-
-//         let parsedSizes = {};
-//         if (typeof sizes === "string") {
-//             try {
-//                 parsedSizes = JSON.parse(sizes);
-//             } catch (error) {
-//                 return res.status(400).json({ message: "Invalid sizes format!" });
-//             }
-//         } else {
-//             parsedSizes = sizes;
-//         }
-
-//         const stockCount = Object.values(sizes)
-//         .map(Number) 
-//         .reduce((sum, qty) => sum + qty, 0)
-
-
-//         const updatedProduct = await Product.findByIdAndUpdate(
-//             id,
-//             {
-//                 productName,
-//                 productDescription,
-//                 productCategory,
-//                 regularPrice,
-//                 salePrice,
-//                 quantity: stockCount,
-//                 color,
-//                 existingImages: JSON.parse(existingImages),
-//                 sizes: parsedSizes 
-//             },
-//             { new: true }
-//         );
-
-//         if (!updatedProduct) {
-//             return res.status(404).json({ message: "Product not found!" });
-//         }
-
-//         res.status(200).json({
-//             message: "Product updated successfully!",
-//             updatedProduct,
-//         });
-
-//     } catch (error) {
-//         console.error("Error updating product:", error);
-//         res.status(500).json({ message: "Internal server error" });
-//     }
-// };
-
-
 const editProduct = async (req, res) => {
     const id = req.params.id;
 
@@ -299,7 +224,7 @@ const editProduct = async (req, res) => {
 
         const categoryExists = await Category.findOne({ name: productCategory });
         if (!categoryExists) {
-            return res.status(400).json({ message: "Category does not exist!" });
+            return res.status(400).json({ success: false, message: "Category does not exist!" });
         }
 
         let parsedSizes = {};
@@ -317,14 +242,37 @@ const editProduct = async (req, res) => {
             .map(Number)
             .reduce((sum, qty) => sum + qty, 0);
 
-        let updatedImages = [];
-        if (existingImages) {
-            updatedImages = typeof existingImages === "string" ? JSON.parse(existingImages) : existingImages;
+        let updatedImages = Array.isArray(existingImages) ? existingImages : [];
+        if (typeof existingImages === "string") {
+            try {
+                updatedImages = JSON.parse(existingImages);
+            } catch (err) {
+                console.error("Error parsing existing images:", err);
+                return res.status(400).json({ message: "Invalid existing images format!" });
+            }
         }
 
         if (req.files && req.files.length > 0) {
             const newImageFilenames = req.files.map(file => file.filename);
             updatedImages = [...updatedImages, ...newImageFilenames];
+
+            const path = require('path');
+            const sharp = require('sharp');
+            const fs = require('fs');
+
+            for (let i = 0; i < req.files.length; i++) {
+                const originalImagePath = req.files[i].path;
+                const resizedImagePath = path.join('public', 'uploads', 'product-images', req.files[i].filename);
+
+                const dir = path.join('public', 'uploads', 'product-images');
+                if (!fs.existsSync(dir)){
+                    fs.mkdirSync(dir, { recursive: true });
+                }
+
+                await sharp(originalImagePath)
+                    .resize({ width: 440, height: 440 })
+                    .toFile(resizedImagePath);
+            }
         }
 
         console.log("Updated Images Array:", updatedImages);
@@ -365,7 +313,6 @@ const editProduct = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
 
 
 const deleteProduct = async (req, res) => {
@@ -431,8 +378,8 @@ const productDetail = async (req, res) => {
         
         const userData = await User.findOne({ _id: user });
 
-        if (!product) {
-            return res.status(404).render('error', { message: 'Product not found' });
+        if (!product || product.isBlocked) {
+            return res.status(404).render('user/error', { message: 'Product not found' });
         }
 
         const categories = await Category.find({ isListed: true }).lean();
@@ -463,12 +410,82 @@ const productDetail = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).render('error', { message: 'Internal Server Error' });
+        res.status(500).render('user/error', { message: 'Internal Server Error' });
     }
 };
 
 
+const deleteProductImage = async (req, res) => {
+    const { productId } = req.params;
+    const { imageName } = req.body;
 
+    try {
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found!" });
+        }
+
+        const updatedImages = product.productImage.filter(img => img !== imageName);
+        if (updatedImages.length === product.productImage.length) {
+            return res.status(400).json({ message: "Image not found in the product!" });
+        }
+
+        product.productImage = updatedImages;
+        await product.save();
+
+        const imagePath = path.join(__dirname, "../../public/uploads/product-images", imageName);
+        if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+        }
+
+        return res.status(200).json({ message: "Image deleted successfully!" });
+    } catch (error) {
+        console.error("Error deleting image:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+const toggleStatus = async (req, res) => {
+    try {
+
+        const productId = req.params.productId
+        const { isBlocked } = req.body
+
+        console.log('data: ', productId, isBlocked);
+
+        const product = await Product.findByIdAndUpdate(productId, {
+            isBlocked: isBlocked
+        })
+
+        if (isBlocked) {
+            const productUpdate = await Product.findByIdAndUpdate(productId, {
+                isBlocked: isBlocked
+            }, {
+                new: true
+            })
+
+            if (productUpdate) {
+                return res.status(200).json({ success: true, message: 'Product status cyhanged successfully '})
+            }
+        }
+
+        const productUpdate = await Product.findByIdAndUpdate(productId, {
+            isBlocked: isBlocked
+        }, {
+            new: true
+        })
+
+        res.status(200).json({ success: true, message: 'Product status cyhanged successfully '})
+        
+
+    } catch (error) {
+        
+        console.log('Error while toggling product status: ', error);
+        res.send(500).json({ success: false, message: 'Internal Server!' })
+    }
+}
 
 
 
@@ -480,6 +497,7 @@ module.exports = {
     editProduct,
     deleteProduct,
     productDetail,
-
+    deleteProductImage,
+    toggleStatus
 }
 

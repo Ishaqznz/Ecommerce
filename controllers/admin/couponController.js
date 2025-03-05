@@ -1,15 +1,35 @@
 const Coupon = require('../../model/couponSchema')
 
 const loadCoupon = async (req, res) => {
-
     try {
-        const coupons = await Coupon.find({ isList: true }); 
-        res.render('load-coupon', { coupons }); 
+        const page = parseInt(req.query.page) || 1; 
+        const limit = 4; 
+        const skip = (page - 1) * limit;
+
+        const totalCoupons = await Coupon.countDocuments({ isList: true }); 
+        const coupons = await Coupon.find({ isList: true }) 
+            .sort({ createdOn: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean(); 
+
+        const totalPages = Math.ceil(totalCoupons / limit); 
+
+        res.render('load-coupon', { 
+            coupons, 
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalCoupons
+            } 
+        });
+
     } catch (error) {
         console.error('Error fetching coupons:', error);
         res.status(500).send('Internal Server Error');
     }
-}
+};
+
 
 const createCoupon = async (req, res) => {
 

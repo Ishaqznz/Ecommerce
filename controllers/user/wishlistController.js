@@ -4,35 +4,43 @@ const Cart = require('../../model/cartSchema');
 const Wishlist = require('../../model/wishlistSchema');
 
 const loadWishList = async (req, res) => {
-
     try {
-
-        const userId = req.session.user; 
+        const userId = req.session.user;
 
         const wishlist = await Wishlist.findOne({ userId }).populate({
             path: 'products.productId',
-            model: 'Product',  
+            model: 'Product',
+            populate: { path: 'category', model: 'Category' } 
         });
-        
 
         let products = [];
 
         if (wishlist && wishlist.products.length > 0) {
             products = wishlist.products
-                .filter(item => item.productId) 
-                .map(item => ({
-                    productId: item.productId._id,
-                    productName: item.productId.productName,
-                    productImage: item.productId.productImage[0] || "default.jpg",
-                    price: item.productId.salePrice || item.productId.regularPrice || 0,
-                    description: item.productId.description,
-                    addedOn: item.addedOn
-                }));
+                .filter(item => item.productId)
+                .map(item => {
+                    const product = item.productId;
+                    const originalPrice = product.regularPrice || 0;
+                    const categoryDiscount = product.category?.categoryOffer || 0;
+                    const productDiscount = product.productOffer || 0;
+
+                    const maxDiscount = Math.max(categoryDiscount, productDiscount);
+                    const finalPrice = originalPrice > 0 ? Math.round(originalPrice * (1 - maxDiscount / 100)) : 0;
+
+                    return {
+                        productId: product._id,
+                        productName: product.productName,
+                        productImage: product.productImage[0] || "default.jpg",
+                        originalPrice,
+                        finalPrice,  
+                        maxDiscount,
+                        description: product.description,
+                        addedOn: item.addedOn
+                    };
+                });
         }
 
-        
-
-        const userData = await User.findById(userId)
+        const userData = await User.findById(userId);
 
         res.render('user/wishlist', { 
             products,

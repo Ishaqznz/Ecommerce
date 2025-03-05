@@ -6,10 +6,8 @@ const crypto = require('crypto');
 
 
 const loadWallet = async (req, res) => {
-
     try {
         const userId = req.session.user;
-
         const user = await User.findById(userId);
 
         if (!user) {
@@ -25,19 +23,21 @@ const loadWallet = async (req, res) => {
                 user: user 
             });
         }
-        
 
+        const sortedTransactions = wallet.transaction.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
         res.render('user/wallet', { 
             walletBalance: wallet.balance, 
-            transactions: wallet.transaction, 
+            transactions: sortedTransactions, 
             user: user 
-        })
+        });
 
     } catch (error) {
         console.error('Error while loading the wallet:', error);
         res.status(500).send('Internal Server Error');
     }
 };
+
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY,

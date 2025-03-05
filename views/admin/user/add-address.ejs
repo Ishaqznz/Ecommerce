@@ -411,6 +411,66 @@
         }
     }
 
+
+
+
+    /* Modern Pagination Styles */
+.pagination-container {
+    margin: 2rem 0;
+}
+
+.pagination {
+    --bs-pagination-hover-bg: #f8f9fa;
+    --bs-pagination-active-bg: #3b82f6;
+    --bs-pagination-active-border-color: #3b82f6;
+}
+
+.pagination .page-link {
+    border-radius: 50%; 
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 5px;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #9ca3af;
+    background-color: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+.pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+    background-color: #f3f4f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 576px) {
+    .pagination .page-link {
+        width: 35px;
+        height: 35px;
+        margin: 0 2px;
+        font-size: 0.875rem;
+    }
+}
+
     
         
 </style>
@@ -465,66 +525,130 @@
             <!-- Address Cards -->
             <div class="container py-4">
                 <div class="row g-4">
-                    <% userAddress.forEach(addressDoc => { %>
-                        <% addressDoc.address.forEach(addr => { %>
-                            <div class="col-md-6 col-lg-4">
-                                <div class="address-card">
-                                    <div class="card-header">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="address-type-badge <%= addr.addressType.toLowerCase() %>">
-                                                <i class="fas <%= addr.addressType === 'home' ? 'fa-home' : 'fa-building' %>"></i>
-                                                <%= addr.addressType %>
-                                            </span>
-                                            <div class="dropdown">
-                                                <button class="btn-actions" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li>
-                                                        <a class="dropdown-item" id="edit-btn" onclick="editAddress('<%=addr._id%>', '<%=JSON.stringify(addr)%>')">
-                                                            <i class="fas fa-edit me-2"></i> Edit
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item text-danger" id="delete-btn" onclick="deleteAddress('<%=addr._id%>')">
-                                                            <i class="fas fa-trash-alt me-2"></i> Delete
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                    <% userAddress.forEach(addr => { %>  <!-- Removed the extra addressDoc loop -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="address-card">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="address-type-badge <%= addr.addressType.toLowerCase() %>">
+                                            <i class="fas <%= addr.addressType === 'home' ? 'fa-home' : 'fa-building' %>"></i>
+                                            <%= addr.addressType %>
+                                        </span>
+                                        <div class="dropdown">
+                                            <button class="btn-actions" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" onclick="editAddress('<%= addr._id %>', '<%= JSON.stringify(addr) %>')">
+                                                        <i class="fas fa-edit me-2"></i> Edit
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" onclick="deleteAddress('<%= addr._id %>')">
+                                                        <i class="fas fa-trash-alt me-2"></i> Delete
+                                                    </a>
+                                                </li>
+                                            </ul>
                                         </div>
-                                        <h3 class="name"><%= addr.name %></h3>
                                     </div>
-                                    
-                                    <div class="card-body">
-                                        <div class="contact-info">
-                                            <div class="phone-number">
-                                                <i class="fas fa-phone-alt me-2"></i>
-                                                <span><%= addr.phone %></span>
-                                            </div>
-                                            <% if (addr.altPhone) { %>
-                                                <div class="alt-phone">
-                                                    <i class="fas fa-phone-alt me-2"></i>
-                                                    <span><%= addr.altPhone %></span>
-                                                    <!-- <span class="alt-label">Alternative</span> -->
-                                                </div>
-                                            <% } %>
+                                    <h3 class="name"><%= addr.name %></h3>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <div class="contact-info">
+                                        <div class="phone-number">
+                                            <i class="fas fa-phone-alt me-2"></i>
+                                            <span><%= addr.phone %></span>
                                         </div>
-            
-                                        <div class="address-details">
-                                            <i class="fas fa-map-marker-alt me-2"></i>
-                                            <div class="address-text">
-                                                <p><%= addr.landMark %></p>
-                                                <p><%= addr.city %></p>
-                                                <p><%= addr.state %> - <%= addr.pincode %></p>
+                                        <% if (addr.altPhone) { %>
+                                            <div class="alt-phone">
+                                                <i class="fas fa-phone-alt me-2"></i>
+                                                <span><%= addr.altPhone %></span>
                                             </div>
+                                        <% } %>
+                                    </div>
+                
+                                    <div class="address-details">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        <div class="address-text">
+                                            <p><%= addr.landMark %></p>
+                                            <p><%= addr.city %></p>
+                                            <p><%= addr.state %> - <%= addr.pincode %></p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        <% }) %>
+                        </div>
                     <% }) %>
                 </div>
+                
+                </div>
+
+
+
+                   <!-- Modern Pagination -->
+<div class="pagination-container mt-5">
+    <nav aria-label="Address pagination">
+        <ul class="pagination justify-content-center">
+            <!-- Previous button -->
+            <li class="page-item <%= pagination.currentPage === 1 ? 'disabled' : '' %>">
+                <a class="page-link" href="/profile?page=<%= pagination.currentPage - 1 %>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <!-- First page -->
+            <% if (pagination.currentPage > 3) { %>
+                <li class="page-item">
+                    <a class="page-link" href="/profile?page=1">1</a>
+                </li>
+                <% if (pagination.currentPage > 4) { %>
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                <% } %>
+            <% } %>
+
+            <!-- Page numbers -->
+            <% for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) { %>
+                <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                    <a class="page-link" href="/profile?page=<%= i %>"><%= i %></a>
+                </li>
+            <% } %>
+
+            <!-- Last page -->
+            <% if (pagination.currentPage < pagination.totalPages - 2) { %>
+                <% if (pagination.currentPage < pagination.totalPages - 3) { %>
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                <% } %>
+                <li class="page-item">
+                    <a class="page-link" href="/profile?page=<%= pagination.totalPages %>"><%= pagination.totalPages %></a>
+                </li>
+            <% } %>
+
+            <!-- Next button -->
+            <li class="page-item <%= pagination.currentPage === pagination.totalPages ? 'disabled' : '' %>">
+                <a class="page-link" href="/profile?page=<%= pagination.currentPage + 1 %>" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="pagination-info text-center mt-2">
+        <span class="text-muted">
+            Showing <strong><%= (pagination.currentPage - 1) * pagination.limit + 1 %></strong> 
+            to <strong><%= Math.min(pagination.currentPage * pagination.limit, pagination.totalItems) %></strong> 
+            of <strong><%= pagination.totalItems %></strong> addresses
+        </span>
+    </div>
+</div>
+
+
+
             </div>
 
 

@@ -31,8 +31,9 @@ const loadCheckOut = async (req, res) => {
         let total = 0;
 
         if (cartData && Array.isArray(cartData.items)) {
-            products = cartData.items.map(item => {
-                return {
+            products = cartData.items
+                .filter(item => !item.productId.isBlocked)  
+                .map(item => ({
                     productId: item.productId._id,
                     productName: item.productId.productName,
                     productImage: item.productId.productImage[0],
@@ -40,11 +41,9 @@ const loadCheckOut = async (req, res) => {
                     quantity: item.quantity,
                     totalPrice: item.totalPrice,
                     size: item.size
-                };
-            });
+                }));
 
             subtotal = products.reduce((acc, product) => acc + (product.totalPrice || 0), 0);
-           
         }
 
         discount = (subtotal / 100) * 10
@@ -440,47 +439,56 @@ const generatePDF = async (req, res) => {
 
 
 const loadOrders = async (req, res) => {
-
     try {
-
         const userId = new mongoose.Types.ObjectId(req.session.user);
+        const userData = await User.findOne({ _id: req.session.user });
 
+        const page = parseInt(req.query.page) || 1;
+        const limit = 2; 
+        const skip = (page - 1) * limit;
 
-        console.log('user id', userId);
+        const totalOrders = await Order.countDocuments({ userId });
 
-        const userData = await User.findOne({ _id: req.session.user})
-           
-        const orders = await Order.find({ userId: userId }) 
+        const orders = await Order.find({ userId })
             .populate({
                 path: 'orderedItems.product',
                 model: 'Product',
                 select: 'productName productImage salePrice'
             })
-             .populate('address', 'city state pincode') 
-            .lean();   
+            .populate('address', 'city state pincode')
+            .sort({ createdOn: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
 
+        const formattedOrders = orders.map(order => ({
+            orderId: order.orderId,
+            orderNumber: order._id.toString().slice(-6),
+            orderDate: order.createdOn.toISOString().split('T')[0],
+            totalAmount: order.totalPrice,
+            finalAmount: order.finalAmount,
+            status: order.status,
+            paymentMethod: order.paymentMethod,
+            couponApplied: order.couponApplied,
+            products: order.orderedItems.map(item => ({
+                id: item.product._id,
+                name: item.product.productName,
+                image: item.product.productImage[0],
+                quantity: item.quantity,
+                price: item.price,
+                size: item.size
+            })),
+            address: order.address ? `${order.address.addressType}, ${order.address.city}, ${order.address.state}, ${order.address.pincode}` : 'N/A'
+        }));
 
-            const formattedOrders = orders.map(order => ({
-                orderId: order.orderId,
-                orderNumber: order._id.toString().slice(-6), 
-                orderDate: order.createdOn.toISOString().split('T')[0], 
-                totalAmount: order.totalPrice, 
-                finalAmount: order.finalAmount,
-                status: order.status,
-                paymentMethod: order.paymentMethod,
-                couponApplied: order.couponApplied,
-                products: order.orderedItems.map(item => ({
-                    id: item.product._id,
-                    name: item.product.productName,
-                    image: item.product.productImage[0], 
-                    quantity: item.quantity,
-                    price: item.price,
-                    size: item.size 
-                })),
-                address: order.address ? `${order.address.addressType}, ${order.address.city}, ${order.address.state}, ${order.address.pincode}` : 'N/A'
-            }));
-         
-        res.render('user/my-order', { orders: formattedOrders, user: userData });
+        const pagination = {
+            currentPage: page,
+            totalPages: Math.ceil(totalOrders / limit),
+            totalItems: totalOrders,
+            limit
+        };
+
+        res.render('user/my-order', { orders: formattedOrders, user: userData, pagination });
 
     } catch (error) {
         console.error('Error while loading the order page:', error);
@@ -488,45 +496,48 @@ const loadOrders = async (req, res) => {
     }
 };
 
-const cancelOrder = async (req, res) => {
 
+
+const cancelOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
 
         console.log('Order ID for cancellation:', orderId);
 
         const order = await Order.findOne({ orderId });
-        
-        console.log('-----------------------');
-        
-        const userData = await User.findOne({ _id: order.userId })
-
-        console.log('user data: ', userData);
-        
 
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
+        console.log('-----------------------');
+        const userData = await User.findOne({ _id: order.userId });
+        console.log('User data:', userData);
+
         for (const item of order.orderedItems) {
-            await Product.findByIdAndUpdate(
-                item.product, 
-                { $inc: { quantity: item.quantity } }, 
-                { new: true }
-            );
+            const product = await Product.findById(item.product);
+            
+            if (!product) continue;
+
+            product.quantity += item.quantity;
+
+            if (item.size && product.sizes.has(item.size)) {
+                product.sizes.set(item.size, (product.sizes.get(item.size) || 0) + item.quantity);
+            }
+
+            await product.save();
         }
 
         if (order.paymentMethod === 'upi' || order.paymentMethod === 'wallet') {
             const userWallet = await Wallet.findOne({ user: order.userId });
 
             if (userWallet) {
-
                 userWallet.balance += order.finalAmount;
 
                 userWallet.transaction.push({
                     amount: order.finalAmount,
                     transactionId: order.orderId,
-                    productName: order.orderedItems.map(item => item.product.toString()), 
+                    productName: order.orderedItems.map(item => item.product.toString()),
                     type: 'credit',
                 });
 
@@ -535,7 +546,6 @@ const cancelOrder = async (req, res) => {
             } else {
                 console.log('User wallet not found.');
             }
-
         }
 
         await Order.findOneAndDelete({ orderId });
@@ -548,13 +558,13 @@ const cancelOrder = async (req, res) => {
     }
 };
 
-const cancelProduct = async (req, res) => {
 
+const cancelProduct = async (req, res) => {
     try {
         const { orderId, productId } = req.params;
         console.log('Cancel specific product in order:', orderId, 'Product:', productId);
 
-        const order = await Order.findOne({ orderId: orderId });
+        const order = await Order.findOne({ orderId });
 
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
@@ -573,27 +583,62 @@ const cancelProduct = async (req, res) => {
 
         const product = await Product.findById(productId);
         if (product) {
-            product.quantity += canceledProduct.quantity; 
+
+            product.quantity += canceledProduct.quantity;
+
+            if (canceledProduct.size && product.sizes.has(canceledProduct.size)) {
+                product.sizes.set(canceledProduct.size, (product.sizes.get(canceledProduct.size) || 0) + canceledProduct.quantity);
+            }
+
             await product.save();
         }
 
         const productTotalPrice = canceledProduct.price * canceledProduct.quantity;
         order.finalAmount -= productTotalPrice;
-        order.totalAmount -= productTotalPrice 
+        order.totalPrice -= productTotalPrice;
 
         if (order.finalAmount < 0) {
             order.finalAmount = 0;
-            order.totalAmount = 0
+            order.totalPrice = 0;
         }
+
+        const userWallet = await Wallet.findOne({ user: order.userId });
+
+            if (userWallet) {
+
+                console.log('user wallet product total price: ', productTotalPrice);
+                
+                userWallet.balance += productTotalPrice;
+
+                userWallet.transaction.push({
+                    amount: productTotalPrice,
+                    transactionId: order.orderId,
+                    productName: order.orderedItems.map(item => item.product.toString()),
+                    type: 'credit',
+                });
+
+                await userWallet.save();
+                console.log('Refund added to wallet successfully.');
+            } else {
+                console.log('User wallet not found.');
+            }
+
+        
 
         order.orderedItems.splice(productIndex, 1);
 
         if (order.orderedItems.length === 0) {
-            await Order.findOneAndDelete({ orderId: orderId });
+
+            await Order.findOneAndDelete({ orderId });
             return res.json({ success: true, message: 'Product removed. Order deleted as no products remain.' });
+
         } else {
             await order.save();
-            return res.json({ success: true, message: 'Product removed from order successfully.', updatedAmount: order.finalAmount });
+            return res.json({ 
+                success: true, 
+                message: 'Product removed from order successfully.', 
+                updatedAmount: order.finalAmount 
+            });
         }
 
     } catch (error) {
@@ -731,14 +776,12 @@ const paymentFailure = async (req, res) => {
 
 
 const downloadInvoice = async (req, res) => {
-
     try {
         const orderId = req.params.id;
 
         const order = await Order.findOne({ orderId })
             .populate('userId', 'name email')
             .populate('orderedItems.product', 'productName price');
-
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -751,58 +794,137 @@ const downloadInvoice = async (req, res) => {
         const doc = new PDFDocument({ margin: 50 });
         doc.pipe(res);
 
-        doc.fontSize(20).text('VOGUE VAULT', { align: 'center' });
+        const colors = {
+            primary: '#333333',
+            secondary: '#666666',
+            accent: '#4A90E2',
+            light: '#F5F5F5',
+            border: '#DDDDDD'
+        };
+
+        const drawHorizontalLine = (y) => {
+            doc.strokeColor(colors.border).lineWidth(1)
+               .moveTo(50, y).lineTo(550, y).stroke();
+        };
+
+        const formatCurrency = (amount) => {
+            return `₹${parseFloat(amount).toFixed(2)}`;
+        };
+
+        doc.fontSize(24).fillColor(colors.primary).text('VOGUE VAULT', { align: 'center' });
+        doc.moveDown(0.2);
+        doc.fontSize(10).fillColor(colors.secondary).text('Premium Fashion Store', { align: 'center' });
         doc.moveDown(0.5);
-        doc.fontSize(16).text('INVOICE', { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(12).text(`Order ID: ${order.orderId}`, { align: 'left' });
-        doc.text(`Invoice Date: ${order.invoiceDate || new Date().toDateString()}`);
-        doc.text(`Customer: ${order.userId.name} (${order.userId.email})`);
-        doc.moveDown();
+        doc.fontSize(16).fillColor(colors.accent).text('INVOICE', { align: 'center' });
+        doc.moveDown(1);
 
-        doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-        doc.moveDown();
+        doc.fontSize(10).fillColor(colors.secondary);
 
-        doc.fontSize(14).text('Shipping Address', { underline: true, bold: true });
-        doc.fontSize(12).text(`${order.address.name}`);
-        doc.text(`${order.address.city}, ${order.address.state}, ${order.address.pincode}`);
-        doc.text(`Phone: ${order.address.phone}`);
-        doc.moveDown();
+        const leftColX = 50;
+        doc.text('BILLED TO:', leftColX, doc.y);
+        doc.fontSize(12).fillColor(colors.primary)
+           .text(order.userId.name, leftColX, doc.y + 15)
+           .fontSize(10).fillColor(colors.secondary)
+           .text(order.userId.email, leftColX, doc.y + 15);
 
-        doc.fontSize(14).text('Order Items', { underline: true, bold: true });
-        doc.moveDown(0.5);
-
-        doc.fontSize(12);
-        doc.text('Product Name', 50, doc.y, { width: 200, continued: true });
-        doc.text('Qty', 270, doc.y, { width: 50, align: 'center', continued: true });
-        doc.text('Price', 350, doc.y, { width: 80, align: 'right', continued: true });
-        doc.text('Total', 450, doc.y, { width: 80, align: 'right' });
-        doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
-        doc.moveDown();
-
-        order.orderedItems.forEach(item => {
-            doc.text(item.product.productName, 50, doc.y, { width: 200, continued: true });
-            doc.text(item.quantity.toString(), 270, doc.y, { width: 50, align: 'center', continued: true });
-            doc.text(`₹${item.price.toFixed(2)}`, 350, doc.y, { width: 80, align: 'right', continued: true });
-            doc.text(`₹${(item.price * item.quantity).toFixed(2)}`, 450, doc.y, { width: 80, align: 'right' });
-        });
-
-        doc.moveDown();
-        doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-        doc.moveDown();
-
-        doc.fontSize(14).text('Order Summary', { underline: true, bold: true });
-        doc.fontSize(12);
-        doc.text(`Total Price: ₹${order.totalPrice.toFixed(2)}`, { align: 'right' });
-        doc.text(`Discount: ₹${order.discount.toFixed(2)}`, { align: 'right' });
-        doc.fontSize(14).text(`Final Amount: ₹${order.finalAmount.toFixed(2)}`, { align: 'right', bold: true });
-        doc.text(`Payment Method: ${order.paymentMethod}`, { align: 'right' });
-        doc.moveDown();
-
-        doc.fontSize(14).text(`Order Status: ${order.status}`, { align: 'center', bold: true });
+        const rightColX = 350;
+        doc.fontSize(10).fillColor(colors.secondary)
+           .text('INVOICE DETAILS:', rightColX, 135);
+        doc.fontSize(12).fillColor(colors.primary)
+           .text(`Invoice #: ${order.orderId}`, rightColX, doc.y + 15)
+           .fontSize(10).fillColor(colors.secondary)
+           .text(`Date: ${new Date(order.invoiceDate || Date.now()).toLocaleDateString()}`, rightColX, doc.y + 15)
+           .text(`Payment Method: ${order.paymentMethod}`, rightColX, doc.y + 15);
 
         doc.moveDown(2);
-        doc.fontSize(10).text('Thank you for shopping with us!', { align: 'center' });
+
+        const currentY = doc.y;
+        doc.fontSize(10).fillColor(colors.secondary)
+           .text('SHIPPING ADDRESS:', leftColX, currentY);
+        doc.fontSize(12).fillColor(colors.primary)
+           .text(order.address.name, leftColX, doc.y + 15)
+           .fontSize(10).fillColor(colors.secondary)
+           .text(`${order.address.city}, ${order.address.state}, ${order.address.pincode}`, leftColX, doc.y + 15)
+           .text(`Phone: ${order.address.phone}`, leftColX, doc.y + 15);
+
+        doc.moveDown(2);
+
+        const tableTop = doc.y;
+        doc.rect(50, tableTop, 500, 20).fill(colors.light);
+        doc.fillColor(colors.primary).fontSize(10);
+
+        const colProduct = 60;
+        const colSize = 260;
+        const colQty = 330;
+        const colPrice = 400;
+        const colTotal = 480;
+
+        doc.text('PRODUCT', colProduct, tableTop + 5)
+           .text('SIZE', colSize, tableTop + 5)
+           .text('QTY', colQty, tableTop + 5)
+           .text('PRICE', colPrice, tableTop + 5)
+           .text('TOTAL', colTotal, tableTop + 5);
+        
+        doc.moveDown(1);
+
+        let itemY = doc.y;
+        
+        order.orderedItems.forEach((item, i) => {
+            const y = itemY + (i * 25);
+
+            if (i % 2 === 0) {
+                doc.rect(50, y - 5, 500, 25).fill('#f9f9f9');
+            }
+            
+            doc.fillColor(colors.primary);
+
+            const productName = item.product.productName;
+            const displayName = productName.length > 25 
+                ? productName.substring(0, 22) + '...' 
+                : productName;
+            
+            doc.text(displayName, colProduct, y)
+               .text(item.size || 'N/A', colSize, y)
+               .text(item.quantity.toString(), colQty, y)
+               .text(formatCurrency(item.price), colPrice, y)
+               .text(formatCurrency(item.price * item.quantity), colTotal, y);
+        });
+
+        const tableBottom = itemY + (order.orderedItems.length * 25) + 10;
+        doc.y = tableBottom;
+        
+        drawHorizontalLine(doc.y);
+        doc.moveDown(1);
+
+        const deliveryCharge = 88;
+        const summaryLabelX = 400; 
+        const summaryValueX = 480; 
+        
+        doc.fontSize(10).fillColor(colors.secondary)
+            .text('Delivery:', summaryLabelX, doc.y);
+        doc.fontSize(10).fillColor(colors.primary)
+            .text(formatCurrency(deliveryCharge), summaryValueX, doc.y - 10, { align: 'right' });
+        
+        doc.moveDown(0.5);
+
+        doc.fontSize(10).fillColor(colors.secondary)
+            .text('TOTAL DUE:', summaryLabelX, doc.y);
+        doc.fontSize(10).fillColor(colors.primary)
+            .text(formatCurrency(order.finalAmount), summaryValueX, doc.y - 10, { align: 'right' });
+        
+        doc.moveDown(2);
+
+        doc.rect(50, doc.y, 500, 30).fill(colors.light);
+        doc.fillColor(colors.primary).fontSize(12)
+           .text(`Order Status: ${order.status.toUpperCase()}`, 0, doc.y + 10, { align: 'center' });
+        
+        doc.moveDown(3);
+
+        doc.fontSize(10).fillColor(colors.secondary)
+           .text('Thank you for shopping with us!', { align: 'center' })
+           .text('Please keep this invoice for your records.', { align: 'center' });
+
+        doc.rect(40, 40, 520, doc.y - 30).stroke(colors.border);
 
         doc.end();
     } catch (error) {
@@ -810,7 +932,6 @@ const downloadInvoice = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
-
 
 const retryPayment = async (req, res) => {
 

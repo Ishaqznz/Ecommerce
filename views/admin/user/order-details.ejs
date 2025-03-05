@@ -326,10 +326,10 @@
                         <div class="product-details">
                             <h5 class="mb-2"><%= product.name %></h5>
                             <p class="mb-1 text-muted">Quantity: <%= product.quantity %></p>
-                            <p class="mb-0 text-muted">Unit Price: $<%= product.price.toFixed(2) %></p>
+                            <p class="mb-0 text-muted">Unit Price: ₹<%= product.price.toFixed(2) %></p>
                         </div>
                         <div class="product-price">
-                            $<%= (product.price * product.quantity).toFixed(2) %>
+                            ₹<%= (product.price * product.quantity).toFixed(2) %>
                         </div>
                     </div>
                 <% }); %>
@@ -337,21 +337,21 @@
                 <div class="price-breakdown">
                     <div class="price-item">
                         <span>Subtotal</span>
-                        <span>$<%= order.totalAmount.toFixed(2) %></span>
+                        <span>₹<%= order.totalAmount.toFixed(2) %></span>
                     </div>
                     <div class="price-item">
                         <span>Shipping</span>
-                        <span>$<%= order.shippingCost.toFixed(2) %></span>
+                        <span>₹<%= order.shippingCost.toFixed(2) %></span>
                     </div>
                     <% if (order.discount) { %>
                         <div class="price-item text-success">
                             <span>Discount</span>
-                            <span>-$<%= order.discount.toFixed(2) %></span>
+                            <span>-₹<%= order.discount.toFixed(2) %></span>
                         </div>
                     <% } %>
                     <div class="price-item total">
                         <span>Total</span>
-                        <span>$<%= order.finalAmount.toFixed(2) %></span>
+                        <span>₹<%= order.finalAmount.toFixed(2) %></span>
                     </div>
                 </div>
             </div>

@@ -38,12 +38,14 @@ router.get('/unlistCategory', adminAuth, categoryController.getUnListCategory)
 // router.get('/addProducts', adminAuth, productController.getProductAddPage)
 router.get('/products', adminAuth, productController.getProducts);
 router.get('/products/addProducts', adminAuth, productController.addProducts)
+router.patch('/products/toggle-status/:productId', adminAuth, productController.toggleStatus)
 // router.post('/add-productt', adminAuth, productController.addingProduct)
 
 router.post('/add-product', adminAuth, upload.array('productImage'), productController.addingProduct);
 router.get('/products/editProduct/:id', adminAuth, productController.getEditProduct)
 router.post('/update-product/:id', adminAuth, upload.array('productImage'), productController.editProduct)
 router.delete('/products/deleteProduct/:id', adminAuth, productController.deleteProduct)
+router.delete('/product/:productId/delete-image', adminAuth, productController.deleteProductImage)
 
 // Order Management
 router.get('/orderList', adminAuth, orderController.loadOrderList)
@@ -70,6 +72,8 @@ router.get('/get-coupon/:name', couponController.getCoupon)
 router.get('/orders/filter', adminAuth, dashboardController.filterOrder)
 router.get('/orders/download/excel', adminAuth, dashboardController.downloadExcelReport)
 router.get('/orders/download/pdf', adminAuth, dashboardController.downloadPdfReport)
+
+router.get('*', (req, res) => res.redirect('/pageNotFound'))
 
 module.exports = router
 

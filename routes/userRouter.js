@@ -14,7 +14,7 @@ const walletController = require('../controllers/user/walletController.js')
 const couponController = require('../controllers/user/couponController.js')
 
 //login managemnet
-router.get('/', userAuth, userController.loadHomePage)
+router.get('/',  userController.loadHomePage)
 router.get('/pageNotFound', userController.pageNotFound)
 router.get('/login', userController.loadLogin)
 router.post('/login', userController.login)
@@ -108,6 +108,8 @@ router.patch('/remove-coupon', userAuth, couponController.removeCoupon)
 router.post('/create-order', userAuth, walletController.upiCheckout)
 router.post('/create-retry-order', userAuth, walletController.createRetryOrder)
 
-// router.get('*', userController.pageRedirect)
+
+router.get('*', (req, res) => res.redirect('/pageNotFound'))
+
 
 module.exports = router

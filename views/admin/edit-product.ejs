@@ -67,10 +67,14 @@
                 <% product.productImage.forEach((image, index) => { %>
                     <div class="image-preview-item">
                         <img src="/uploads/product-images/<%= image %>" alt="Product image <%= index + 1 %>">
-                        <button type="button" class="delete-btn" data-image-id="<%= index %>">Delete</button>
+                        <button type="button" class="delete-btn" 
+                            data-image-id="<%= index %>" 
+                            data-image-name="<%= image %>">
+                            Delete
+                        </button>
                     </div>
                 <% }); %>
-            </div>
+            </div>            
 
             <h3 class="section-title">Add New Images</h3>
             <div class="image-preview-container" id="imagePreviewContainer">
@@ -407,6 +411,81 @@
 <script>
 
 
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("currentImageContainer").addEventListener("click", async (event) => {
+        if (event.target.classList.contains("delete-btn")) {
+            const imageContainer = document.getElementById("currentImageContainer");
+            const imageCount = imageContainer.getElementsByClassName("image-preview-item").length;
+
+            if (imageCount < 3) {
+                Swal.fire({
+                    title: "Action Denied!",
+                    text: "You must keep at least 3 images.",
+                    icon: "warning",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "OK"
+                }).then(() => {
+                    window.location.reload()
+                })
+                return;
+            }
+
+            const imageIndex = event.target.getAttribute("data-image-id");
+            const imageName = event.target.getAttribute("data-image-name");
+            const productId = "<%= product._id %>";
+
+            const confirmDelete = await Swal.fire({
+                title: "Are you sure?",
+                text: "This image will be permanently deleted.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            });
+
+            if (!confirmDelete.isConfirmed) return;
+
+            try {
+                const response = await fetch(`/admin/product/${productId}/delete-image`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ imageName })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    event.target.parentElement.remove();
+
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Image deleted successfully.",
+                        icon: "success",
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                } else {
+                    Swal.fire({
+                        title: "Error!",
+                        text: result.message,
+                        icon: "error"
+                    });
+                }
+            } catch (error) {
+                console.error("Error deleting image:", error);
+                Swal.fire({
+                    title: "Oops!",
+                    text: "Something went wrong!",
+                    icon: "error"
+                });
+            }
+        }
+    });
+});
+
+
+
 
     let selectedSizes = "<%= JSON.stringify(product.sizes) %>"
     let croppedFiles = [];
@@ -516,10 +595,8 @@
             cropper.destroy();
         }
 
-        // Show the crop button
         document.getElementById('croppedImageSection').style.display = 'block';
-        
-        // Initialize Cropper.js
+
         cropper = new Cropper(img, {
             aspectRatio: 1,
             viewMode: 1,
@@ -535,13 +612,11 @@
         });
     }
 
-    // Handle save crop button click
     document.getElementById('saveCropBtn').addEventListener('click', function() {
         if (!cropper) return;
 
-        // Get the cropped canvas
         const canvas = cropper.getCroppedCanvas({
-            width: 600,    // Set maximum dimensions for the cropped image
+            width: 600,    
             height: 600,
             imageSmoothingEnabled: true,
             imageSmoothingQuality: 'high',
@@ -597,12 +672,7 @@
         formData.append('existingImages[]', img.getAttribute('data-filename') || img.src.split('/').pop());
     });
 
-    // const imageInput = document.getElementById('productImage');
-    // if (imageInput.files.length > 0) {
-    //     for (let file of imageInput.files) {
-    //         formData.append('productImage', file);
-    //     }
-    // }
+
 
     croppedFiles.forEach(file => {
         formData.append('productImage', file);
