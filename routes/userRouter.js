@@ -103,13 +103,10 @@ router.post('/verify-payment', userAuth, walletController.verifyAddMoneyPayment)
 router.post('/apply-coupon', userAuth, couponController.applyCoupon)
 router.patch('/remove-coupon', userAuth, couponController.removeCoupon)
 
-
 // UPI payement config
 router.post('/create-order', userAuth, walletController.upiCheckout)
 router.post('/create-retry-order', userAuth, walletController.createRetryOrder)
 
-
-router.get('*', (req, res) => res.redirect('/pageNotFound'))
 
 
 module.exports = router

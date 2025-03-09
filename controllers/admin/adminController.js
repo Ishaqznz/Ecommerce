@@ -5,11 +5,17 @@ const Order = require('../../model/orderSchema')
 const Coupon = require('../../model/couponSchema')
 
 const loadLogin = async (req, res) => {
-    
-    if (req.session.admin) {
-        return res.redirect('/admin/dashboard')
+
+    try {
+        if (req.session.admin) {
+            return res.redirect('/admin/dashboard')
+        }
+        res.render('admin-login', {message: null})
+
+    } catch (error) {
+        console.log('Error while loadig admin login', error);
+        res.redirect('/pageNotFound')
     }
-    res.render('admin-login', {message: null})
 }
 
 
