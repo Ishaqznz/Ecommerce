@@ -73,6 +73,8 @@ const addToCart = async (req, res) => {
 
         const product = await Product.findById(productId).populate('category');
 
+        console.log('product quantity: ', product.quantity);
+
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -85,7 +87,7 @@ const addToCart = async (req, res) => {
             return res.status(400).json({ message: 'Product is out of stock.' });
         }
 
-        if (!(selectedSize in product.sizes) || product.sizes[selectedSize] <= 0) {
+        if (!product.sizes.has(selectedSize) || product.sizes.get(selectedSize) <= 0) {
             return res.status(400).json({ message: `Size ${selectedSize} is out of stock.` });
         }
 
@@ -115,7 +117,7 @@ const addToCart = async (req, res) => {
                 price: productPrice,
                 totalPrice: productPrice,
                 status: 'placed',
-                size: selectedSize || ''
+                size: selectedSize
             });
         }
 
