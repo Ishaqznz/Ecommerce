@@ -85,7 +85,7 @@ const addToCart = async (req, res) => {
             return res.status(400).json({ message: 'Product is out of stock.' });
         }
 
-        if (!product.sizes.has(selectedSize) || product.sizes.get(selectedSize) <= 0) {
+        if (!(selectedSize in product.sizes) || product.sizes[selectedSize] <= 0) {
             return res.status(400).json({ message: `Size ${selectedSize} is out of stock.` });
         }
 
@@ -115,7 +115,7 @@ const addToCart = async (req, res) => {
                 price: productPrice,
                 totalPrice: productPrice,
                 status: 'placed',
-                size: selectedSize
+                size: selectedSize || ''
             });
         }
 
