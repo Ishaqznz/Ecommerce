@@ -1112,7 +1112,7 @@ const sizeData = {};
         });
     });
 
-    document.querySelector('.product-form').addEventListener('submit', function(e) {
+    document.querySelector('.product-form').addEventListener('submit', async function(e) {
     e.preventDefault(); 
 
     const productName = document.getElementById('productName').value.trim();
@@ -1164,7 +1164,7 @@ const sizeData = {};
         formData.append('productImage', file);
     });
 
-    fetch(this.action, {
+    await fetch(this.action, {
         method: 'POST',
         body: formData
     })
@@ -1188,7 +1188,7 @@ const sizeData = {};
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'There was a problem adding the product. Please try again.'
+            text: error || 'There was a problem adding the product. Please try again.'
         });
     });
 });
