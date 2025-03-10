@@ -1,4 +1,5 @@
 const Category = require('../../model/categorySchema');
+const Product = require('../../model/productSchema');
 
 const categoryInfo = async (req, res) => {
     try {
@@ -63,6 +64,7 @@ const getEditCategory = async (req, res) => {
 
 const editCategory = async (req, res) => {
     try {
+
         const id = req.params.id;
         const { categoryname, description } = req.body;
 
@@ -70,8 +72,6 @@ const editCategory = async (req, res) => {
         console.log("New Name:", categoryname);
         console.log("New Description:", description);
 
-        
- 
         const existingCategory = await Category.findOne({ 
             name: categoryname, 
             _id: { $ne: id } 

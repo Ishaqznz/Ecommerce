@@ -1188,7 +1188,7 @@ const sizeData = {};
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: error || 'There was a problem adding the product. Please try again.'
+            text: error.message || 'There was a problem adding the product. Please try again.'
         });
     });
 });

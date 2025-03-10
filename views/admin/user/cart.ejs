@@ -296,7 +296,7 @@
                             </div>
                         </td>
                         
-                        <td data-label="Total" class="item-total">₹<%= (item.price * item.quantity).toFixed(2) %></td>
+                        <td id="total-price" data-label="Total" class="item-total">₹<%= (item.price * item.quantity).toFixed(2) %></td>
                         <td>
                             <button class="remove-btn" onclick="removeFromCart('<%= item._id %>')">
                                 <i class="fas fa-trash"></i>
@@ -310,9 +310,9 @@
 
             <div class="cart-summary">
                 <div class="summary-details">
-                    <div>Subtotal: <span class="cart-subtotal">₹<%= cart.subtotal ? cart.subtotal.toFixed(2) : '0.00' %></span></div>
-                    <div>Tax: <span class="cart-tax">₹<%= cart.tax ? cart.tax.toFixed(2) : '0.00' %></span></div>
-                    <div class="total">Total: <span class="cart-total">₹<%= cart.total ? cart.total.toFixed(2) : '0.00' %></span></div>
+                    <div class="total">Total: <span class="cart-subtotal">₹<%= cart.subtotal ? cart.subtotal.toFixed(2) : '0.00' %></span></div>
+                    <!-- <div>Tax: <span class="cart-tax">₹<%= cart.tax ? cart.tax.toFixed(2) : '0.00' %></span></div>
+                    <div class="total">Total: <span class="cart-total" id="total-last">₹<%= cart.total ? cart.total.toFixed(2) : '0.00' %></span></div> -->
                 </div>
                 <a href="/checkout" class="checkout-btn">Proceed to Checkout</a>
             </div>
@@ -389,73 +389,91 @@ async function removeFromCart(itemId) {
 }
 
 async function updateCartItem(itemId, newQuantity, size) {
+    console.log('size of the product: ', size);
 
-    console.log('size of the poduct: ', size);
-        newQuantity = parseInt(newQuantity, 10);
-        
-        if (newQuantity < 1) {
-            Swal.fire({
+    newQuantity = parseInt(newQuantity, 10);
+    
+    if (newQuantity < 1) {
+        Swal.fire({
             icon: 'warning',
             title: 'Invalid Quantity',
             text: 'Quantity cannot be less than 1.',
             confirmButtonText: 'OK'
         });
-            return;
-        }
-
-        if (newQuantity > 15 && newQuantity != 15) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Limit Exceeded',
-                text: 'You can only add up to 15 items per product.',
-                confirmButtonText: 'OK'
-            });
         return;
     }
 
-        try {
-            const response = await fetch('/cart/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ itemId, quantity: newQuantity, size: size })
-            }).then(response => response.json())
-                .then(data => {
-                    if (data.message.includes("Only")) { 
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Stock Limit Reached',
-                            text: data.message,
-                            confirmButtonText: 'OK'
-                        });
-                    } else {
-                        updateCartUI(itemId, newQuantity, data.cart);
-                    }
-                })
-        } catch (error) {
-            console.error('Error updating cart:', error);
-        }
+    if (newQuantity > 15) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Limit Exceeded',
+            text: 'You can only add up to 15 items per product.',
+            confirmButtonText: 'OK'
+        });
+        return;
     }
 
-    function updateCartUI(itemId, quantity, cart) {
-        const itemRow = document.querySelector(`tr[data-id="${itemId}"]`);
+    try {
+        const response = await fetch('/cart/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ itemId, quantity: newQuantity, size: size })
+        });
 
-        if (itemRow) {
-            // Update the input field with the latest quantity
-            const quantityInput = itemRow.querySelector('input');
-            quantityInput.value = quantity;
+        const data = await response.json();
 
-            // Update total price for this item
-            const price = parseFloat(itemRow.querySelector('.item-price').innerText.replace('₹', ''));
-            itemRow.querySelector('.item-total').innerText = `₹${(price * quantity).toFixed(2)}`;
+        if (data.message.includes("Only")) { 
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stock Limit Reached',
+                text: data.message,
+                confirmButtonText: 'OK'
+            });
+        } else {
+            console.log("Updated cart data received:", data.cart); 
+            updateCartUI(itemId, newQuantity, data.cart);
+        }
+    } catch (error) {
+        console.error('Error updating cart:', error);
+    }
+}
 
-            // Update cart summary (subtotal, tax, total)
-            document.querySelector('.cart-subtotal').innerText = `₹${cart.subtotal.toFixed(2)}`;
+
+function updateCartUI(itemId, quantity, cart) {
+    const itemRow = document.querySelector(`tr[data-id="${itemId}"]`);
+
+    if (itemRow) {
+        // ✅ Update the quantity input field
+        const quantityInput = itemRow.querySelector('input');
+        quantityInput.value = quantity;
+
+        // ✅ Update total price for this item
+        const price = parseFloat(itemRow.querySelector('.item-price').innerText.replace('₹', ''));
+        itemRow.querySelector('.item-total').innerText = `₹${(price * quantity).toFixed(2)}`;
+
+        // ✅ Ensure cart data is available before updating UI
+        if (cart) {
+            console.log("Updated cart received:", cart); // Debugging line
+
+            console.log('cart items: ', cart.items);
+
+            let subtotal = 0
+
+            for (var i = 0; i < cart.items.length; i++) {
+                subtotal += cart.items[i].totalPrice
+            }
+            
+            document.querySelector('.cart-subtotal').innerText = `₹${subtotal.toFixed(2)}`;
             document.querySelector('.cart-tax').innerText = `₹${cart.tax.toFixed(2)}`;
-            document.querySelector('.cart-total').innerText = `₹${cart.total.toFixed(2)}`;
+            document.querySelector('.cart-total').innerText = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('total-last').innerText = `₹${subtotal.toFixed(2)}`
         }
     }
+}
+
+
 
 
 

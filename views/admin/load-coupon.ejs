@@ -458,6 +458,23 @@ function deleteCoupon(couponName) {
                 minimumPrice: document.querySelector('input[name="minimumCreatePrice"]').value
             };
 
+
+            console.log('data of the offer: ', formData.offerPrice, formData.minimumPrice);
+            
+            if (parseInt(formData.offerPrice) >= parseInt(formData.minimumPrice)) {
+
+                Swal.fire({
+                    icon: "warning",
+                    title: "Invalid Price",
+                    text: "Offer price must be less than minimum price.",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "OK"
+                });
+                return;
+
+            }
+
+
             const start = new Date(formData.startDate);
             const expiry = new Date(formData.expiryDate);
 

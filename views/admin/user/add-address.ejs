@@ -489,7 +489,7 @@
             </div>
 
             <nav>
-                <a href="#" class="nav-item">
+                <a href="/orders" class="nav-item">
                     <i class="fas fa-shopping-bag"></i>
                     MY ORDERS
                 </a>
@@ -497,18 +497,11 @@
                     <i class="fas fa-user-cog"></i>
                     ACCOUNT SETTINGS
                 </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-user"></i>
-                    Profile Information
-                </a>
                 <a href="/profile" class="nav-item active">
                     <i class="fas fa-map-marker-alt"></i>
                     Manage Addresses
                 </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-id-card"></i>
-                    PAN Card Information
-                </a>
+                
             </nav>
         </div>
 
@@ -796,6 +789,9 @@
 
                     if (response.ok) {
 
+                        console.log('if case:');
+                        
+
                         // closeModal();
 
                         Swal.fire({
@@ -821,6 +817,9 @@
 
                         window.location.reload();
                     } else {
+
+                        console.log('else case');
+                        
                         throw new Error('Failed to add address');
                     }
 

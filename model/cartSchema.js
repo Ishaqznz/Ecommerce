@@ -19,11 +19,11 @@ const cartSchema = new Schema({
         },
         price: {
             type: Number,
-            required: true
+            required: false
         },
         totalPrice: {
             type: Number,
-            required: true
+            required: false
         },
         status: {
             type: String,

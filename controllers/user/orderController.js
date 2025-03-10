@@ -15,6 +15,9 @@ const Coupon = require('../../model/couponSchema')
 const loadCheckOut = async (req, res) => {
 
     try {
+
+        console.log('checkout.....');
+        
         const userId = req.session.user;
 
         const userData = await User.findOne({ _id: userId });
@@ -903,14 +906,14 @@ const downloadInvoice = async (req, res) => {
         doc.fontSize(10).fillColor(colors.secondary)
             .text('Delivery:', summaryLabelX, doc.y);
         doc.fontSize(10).fillColor(colors.primary)
-            .text(formatCurrency(deliveryCharge), summaryValueX, doc.y - 10, { align: 'right' });
+            .text(formatCurrency(deliveryCharge), summaryValueX, doc.y - 10, { align: 'left' });
         
         doc.moveDown(0.5);
 
         doc.fontSize(10).fillColor(colors.secondary)
             .text('TOTAL DUE:', summaryLabelX, doc.y);
         doc.fontSize(10).fillColor(colors.primary)
-            .text(formatCurrency(order.finalAmount), summaryValueX, doc.y - 10, { align: 'right' });
+            .text(formatCurrency(order.finalAmount), summaryValueX, doc.y - 10, { align: 'left' });
         
         doc.moveDown(2);
 

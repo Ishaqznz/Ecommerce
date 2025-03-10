@@ -27,7 +27,7 @@ const loadCart = async (req, res) => {
         cart.items = cart.items.filter(item => item.productId && !item.productId.isBlocked);
 
         let subtotal = cart.items.reduce((sum, item) => {
-            return sum + (item.productId.salePrice * item.quantity);
+            return sum + (item.price * item.quantity);
         }, 0);
 
         const TAX_RATE = 0; 
