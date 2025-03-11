@@ -20,16 +20,30 @@ const loadWallet = async (req, res) => {
             return res.render('user/wallet', { 
                 walletBalance: 0, 
                 transactions: [], 
-                user: user 
+                user: user,
+                currentPage: 1,
+                totalPages: 1
             });
         }
 
         const sortedTransactions = wallet.transaction.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
+
+        const page = parseInt(req.query.page) || 1;
+        const itemsPerPage = 4;
+        const totalItems = sortedTransactions.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+
+        const paginatedTransactions = sortedTransactions.slice(startIndex, endIndex);
+
         res.render('user/wallet', { 
             walletBalance: wallet.balance, 
-            transactions: sortedTransactions, 
-            user: user 
+            transactions: paginatedTransactions, 
+            user: user,
+            currentPage: page,
+            totalPages: totalPages
         });
 
     } catch (error) {

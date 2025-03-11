@@ -321,6 +321,44 @@ document.getElementById("couponEditForm").addEventListener("submit", async funct
         minimumPrice: document.querySelector("[name='minimumPrice']").value
     };
 
+    const offerPrice = Number(formData.offerPrice)
+    const minimumPrice = Number(formData.minimumPrice)
+        
+        if (isNaN(offerPrice) || offerPrice <= 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Invaild Offer Price",
+                text: "Offer price cannot be less than 0!",
+                confirmButtonColor: "#3085d6",
+                confirmButtonText: "OK"
+            });
+            return
+        }
+        
+        if (isNaN(minimumPrice) || minimumPrice <= 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Invaild Minimum Price",
+                text: "Minimum price cannot be less than 0!",
+                confirmButtonColor: "#3085d6",
+                confirmButtonText: "OK"
+            });
+            return
+        }
+
+    if (parseInt(formData.offerPrice) >= parseInt(formData.minimumPrice)) {
+
+        Swal.fire({
+            icon: "warning",
+            title: "Invalid Price",
+            text: "Offer price must be less than minimum price.",
+            confirmButtonColor: "#3085d6",
+            confirmButtonText: "OK"
+        });
+        return;
+
+    }
+
     const start = new Date(formData.startDate);
     const expiry = new Date(formData.expiryDate);
 
@@ -458,8 +496,43 @@ function deleteCoupon(couponName) {
                 minimumPrice: document.querySelector('input[name="minimumCreatePrice"]').value
             };
 
+            const couponRegex = /^[a-zA-Z0-9-]{3,20}$/
+            if (!couponRegex.test(formData.couponName)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Invalid Coupon Code",
+                    text: "Coupon code cannot include special characters.",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "OK"
+                });
+                return
+            }
 
-            console.log('data of the offer: ', formData.offerPrice, formData.minimumPrice);
+        const offerPrice = Number(formData.offerPrice)
+        const minimumPrice = Number(formData.minimumPrice)
+            
+            if (offerPrice <= 0) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Invaild Offer Price",
+                    text: "Offer price cannot be less than 0!",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "OK"
+                });
+                return
+            }
+            
+            if (minimumPrice <= 0) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Invaild Minimum Price",
+                    text: "Minimum price cannot be less than 0!",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "OK"
+                });
+                return
+            }
+
             
             if (parseInt(formData.offerPrice) >= parseInt(formData.minimumPrice)) {
 

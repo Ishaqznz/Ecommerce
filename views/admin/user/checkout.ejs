@@ -1153,7 +1153,7 @@
         .removeCoupon {
             border: 0px;
             border-radius: 10px;
-            background-color: #1565c0;
+            background-color: #007bff;
             padding: 5px;
         }
 
@@ -1242,15 +1242,15 @@
                 </h2>
                 
                 <div class="coupon-container">
-                    <% if (locals.couponApplied) { %>
+                    <% if (appliedCoupon || locals.couponApplied) { %>
                         <div class="coupon-success">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
                             </svg>
-                            <span>Coupon "<%= couponCode %>" applied successfully!</span>
-                            <form action="/remove-coupon" method="POST" class="remove-coupon-form">
-                                <button type="submit" class="remove-coupon">Remove</button>
+                            <span>Coupon "<%= appliedCoupon.couponCode %>" applied successfully!</span>
+                            <form class="remove-coupon-form">
+                                <button type="submit" class="remove-coupon" onclick="removeCoupon()">Remove</button>
                             </form>
                         </div>
                     <% } else { %>
@@ -1652,6 +1652,37 @@ async function removeCoupon(couponCode) {
             title: 'Error',
             text: result.message || 'Error while removing the coupon!!',
     })
+}
+
+const couponCheck = '<%= appliedCoupon %>'
+
+let couponApplied = null
+
+if (couponCheck) {
+    couponApplied = JSON.parse('<%- JSON.stringify(appliedCoupon) %>');
+    console.log('applied coupon: ', couponApplied);
+    console.log('applied coupon values: ', couponApplied.couponName);
+}
+
+
+if (couponApplied) {
+    const totalAmountElement = document.getElementById('total-amount');
+            const totalAmount = parseFloat(totalAmountElement.textContent.replace('₹', '').trim());
+            const offerPrice = couponApplied.couponOfferPrice;
+
+            console.log('Offer price for coupon: ', offerPrice);
+
+            totalAmountElement.textContent = `₹${(totalAmount - offerPrice).toFixed(2)}`;
+
+            const couponDiscountElement = document.getElementById('coupon-discount'); 
+            const discountValueElement = couponDiscountElement.querySelector('.dis-coupon'); 
+
+            couponDiscountElement.style.display = 'block';
+
+            // const applyCoupon = document.getElementById('apply-coupon')
+            // applyCoupon.disabled = true
+
+            discountValueElement.textContent = `-₹${offerPrice.toFixed(2)}`;               
 }
 
 async function applyCoupon(productPrice) {

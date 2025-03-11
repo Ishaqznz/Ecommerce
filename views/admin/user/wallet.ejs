@@ -26,6 +26,107 @@
         .transaction-row:hover {
             background-color: #f8fafc;
         }
+
+
+
+        .pagination-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  .pagination {
+    margin-bottom: 10px;
+  }
+  
+  .pagination-list {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .pagination-item {
+    margin: 0 4px;
+  }
+  
+  .pagination-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 6px;
+    border-radius: 6px;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    font-size: 14px;
+  }
+  
+  .pagination-link:hover:not(.disabled):not(.active) {
+    background-color: #e0e0e0;
+  }
+  
+  .pagination-link.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+    font-weight: 600;
+  }
+  
+  .pagination-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  .pagination-ellipsis {
+    margin: 0 4px;
+    color: #777;
+  }
+  
+  .pagination-info {
+    font-size: 14px;
+    color: #777;
+  }
+  
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .pagination-link {
+      background-color: #2a2a2a;
+      border-color: #444;
+      color: #eee;
+    }
+    
+    .pagination-link:hover:not(.disabled):not(.active) {
+      background-color: #444;
+    }
+    
+    .pagination-link.active {
+      background-color: #3498db;
+    }
+    
+    .pagination-info {
+      color: #aaa;
+    }
+  }
+  
+  /* Mobile responsive */
+  @media screen and (max-width: 480px) {
+    .pagination-link {
+      min-width: 32px;
+      height: 32px;
+      font-size: 13px;
+    }
+  }
+
+
     </style>
 </head>
 
@@ -71,7 +172,18 @@
                             <% transactions.forEach(function(transaction) { %>
                             <tr class="transaction-row border-b border-gray-100">
                                 <td class="py-3 px-4"><%= transaction.type %></td>
-                                <td class="py-3 px-4 text-gray-500"><%= transaction.createdAt %></td>
+                                <td class="py-3 px-4 text-gray-500">
+                                    <%= new Date(transaction.createdAt).toLocaleString('en-IN', {
+                                        weekday: 'short',  // "Tue"
+                                        year: 'numeric',   // "2025"
+                                        month: 'short',    // "Mar"
+                                        day: '2-digit',    // "11"
+                                        hour: '2-digit',   // "11"
+                                        minute: '2-digit', // "38"
+                                        hour12: true       // "AM/PM format"
+                                    }) %>
+                                </td>
+                                
                                 <td class="py-3 px-4 text-right <%= transaction.type.toLowerCase() === 'debit' ? 'text-red-600' : 'text-green-600' %>">
                                     ₹<%= Math.abs(transaction.amount).toLocaleString() %>
                                 </td>
@@ -122,6 +234,90 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+<!-- Modern Pagination Component -->
+<div class="pagination-container">
+    <% if (totalPages > 1) { %>
+      <nav class="pagination" aria-label="Wallet transactions pagination">
+        <ul class="pagination-list">
+          <!-- Previous button -->
+          <li class="pagination-item">
+            <a href="/wallet<%= currentPage > 1 ? '?page=' + (currentPage - 1) : '#' %>" 
+               class="pagination-link <%= currentPage === 1 ? 'disabled' : '' %>"
+               <%= currentPage === 1 ? 'aria-disabled="true"' : '' %>>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </a>
+          </li>
+          
+          <!-- First page -->
+          <% if (currentPage > 3) { %>
+            <li class="pagination-item">
+              <a href="/wallet?page=1" class="pagination-link">1</a>
+            </li>
+            
+            <% if (currentPage > 4) { %>
+              <li class="pagination-ellipsis">...</li>
+            <% } %>
+          <% } %>
+          
+          <!-- Page numbers -->
+          <% 
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
+            
+            // Adjust if at edges
+            if (currentPage <= 2) {
+              endPage = Math.min(totalPages, 3);
+            }
+            if (currentPage >= totalPages - 1) {
+              startPage = Math.max(1, totalPages - 2);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) { 
+          %>
+            <li class="pagination-item">
+              <a href="/wallet?page=<%= i %>" 
+                 class="pagination-link <%= currentPage === i ? 'active' : '' %>"
+                 <%= currentPage === i ? 'aria-current="page"' : '' %>>
+                <%= i %>
+              </a>
+            </li>
+          <% } %>
+  
+          <!-- Last pages ellipsis -->
+          <% if (currentPage < totalPages - 2) { %>
+            <% if (currentPage < totalPages - 3) { %>
+              <li class="pagination-ellipsis">...</li>
+            <% } %>
+            <li class="pagination-item">
+              <a href="/wallet?page=<%= totalPages %>" class="pagination-link"><%= totalPages %></a>
+            </li>
+          <% } %>
+   
+          <!-- Next button -->
+          <li class="pagination-item">
+            <a href="/wallet<%= currentPage < totalPages ? '?page=' + (currentPage + 1) : '#' %>" 
+               class="pagination-link <%= currentPage === totalPages ? 'disabled' : '' %>"
+               <%= currentPage === totalPages ? 'aria-disabled="true"' : '' %>>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+  
+      <div class="pagination-info">
+        Page <%= currentPage %> of <%= totalPages %>
+      </div>
+    <% } %>
+  </div>
 
 
 

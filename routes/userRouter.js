@@ -32,9 +32,13 @@ router.get('/auth/google',
 router.get('/auth/google/callback', 
     passport.authenticate('google', { failureRedirect: '/signup'}), 
     (req, res) => {
-        
-        req.session.user = req.user._id
-        res.redirect('/');
+        try {
+            req.session.user = req.user._id
+            res.redirect('/');
+        } catch (error) {
+            console.log('Error in google authentication: ', error);
+            res.redirect('/');
+        }
     }
 );
 

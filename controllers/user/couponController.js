@@ -18,6 +18,15 @@ const applyCoupon = async (req, res) => {
                 req.session.offerPrice = findCoupon.offerPrice
 
                 console.log('offer price stored in session: ', req.session.offerPrice);
+
+                req.session.appliedCoupon = {
+                    couponName: couponCode,
+                    couponOfferPrice: findCoupon.offerPrice
+                }
+
+                const appliedCoupon = req.session.appliedCoupon
+                console.log(appliedCoupon.couponName);
+                
                 
                 res.status(200).json({ success: true, message: 'Applied coupon succesfully!', offerPrice: findCoupon.offerPrice })
 
@@ -41,6 +50,7 @@ const removeCoupon = async (req, res) => {
     try {
         
         req.session.offerPrice = 0
+        req.session.appliedCoupon = undefined
         res.status(200).json({
             success: true, message: 'Coupon removed successfully!'
         })

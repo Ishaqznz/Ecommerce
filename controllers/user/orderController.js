@@ -52,6 +52,9 @@ const loadCheckOut = async (req, res) => {
         discount = (subtotal / 100) * 10
         total = subtotal + delivery;
 
+        const appliedCoupon = req.session.appliedCoupon
+        console.log('applied coupon: ', appliedCoupon);
+ 
         res.render('user/checkout', {
             user: userData,
             addresses,
@@ -60,7 +63,8 @@ const loadCheckOut = async (req, res) => {
             delivery,
             discount,
             total,
-            coupons
+            coupons,
+            appliedCoupon
         });
 
     } catch (error) {
