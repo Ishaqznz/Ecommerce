@@ -32,6 +32,20 @@ const addCategory = async (req, res) => {
     const { name, description } = req.body;
 
     try {
+
+        if (!name || !description) {
+            res.status(400).json({ success: false, error: 'All fields required!' })
+            return;
+        }
+
+        const categoryRegex = /^[a-zA-Z ]{3,20}$/
+
+
+        if (!categoryRegex.test(name)) {
+            res.status(400).json({ success: false, error: 'Category name should not include any numbers or special characters!' })
+            return;
+        }
+
         const existingCategory = await Category.findOne({ name });
         if (existingCategory) {
             return res.status(400).json({ error: "Category already exists" });
@@ -42,6 +56,7 @@ const addCategory = async (req, res) => {
 
         return res.status(201).json({ message: "Category added successfully" });
     } catch (error) {
+        console.log('Error while creating category: ', error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
