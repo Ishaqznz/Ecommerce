@@ -109,16 +109,16 @@ const addToCart = async (req, res) => {
                 return res.status(400).json({ message: `Not enough stock available for size ${selectedSize}.` });
             }
             existingItem.quantity += 1;
-            existingItem.totalPrice = existingItem.quantity * existingItem.price;
+            existingItem.totalPrice = Number(existingItem.quantity) * Number(existingItem.price);
         } else {
             cart.items.push({
                 productId,
                 quantity: 1,
-                price: productPrice,
-                totalPrice: productPrice,
+                price: Number(productPrice.toString().replace(/,/g, '')), 
+                totalPrice: Number(productPrice.toString().replace(/,/g, '')), 
                 status: 'placed',
                 size: selectedSize
-            });
+            });            
         }
 
         // product.sizes.set(selectedSize, product.sizes.get(selectedSize) - 1);
