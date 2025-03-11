@@ -314,6 +314,7 @@ const placeOrder = async (req, res) => {
 
             await wallet.save();
 
+            req.session.appliedCoupon = null
             return res.json({ success: true, message: 'Payment Successful!', walletBalance: wallet.balance });
         } else if (paymentMethod === 'wallet') {
 
