@@ -296,6 +296,8 @@ const downloadPdfReport = async (req, res) => {
           .fillColor('#F9FAFB')
           .fill();
       }
+
+      console.log('order: ', orders)
       
       const userName = order.userId?.name || "Unknown";
       const rowTextY = rowY + 10;
